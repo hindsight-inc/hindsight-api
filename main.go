@@ -6,8 +6,12 @@ import (
 )
 
 type User struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (self *User) Response() gin.H {
+	return gin.H{"username": self.Username}
 }
 
 /*
@@ -16,6 +20,23 @@ curl -v -X POST \
   -H 'content-type: application/json' \
   -d '{ "username": "username001", "password": "password001" }'
 */
+func UserLogin(context *gin.Context) {
+	var json User
+	if err := context.ShouldBindJSON(&json); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if json.Username != "username001" || json.Password != "password001" {
+		context.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+func UserInfo(context *gin.Context) {
+	user := User{Username: "username002"}
+	context.JSON(200, user.Response())
+}
 
 func main() {
 	router := gin.Default()
@@ -25,20 +46,8 @@ func main() {
 		})
 	})
 
-	router.POST("/login", func(c *gin.Context) {
-		var json User
-		if err := c.ShouldBindJSON(&json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		
-		if json.Username != "username001" || json.Password != "password001" {
-			c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
-			return
-		} 
-		
-		c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
-	})
+	router.POST("/login", UserLogin)
+	router.GET("/user", UserInfo)
 
 	router.Run()
 }

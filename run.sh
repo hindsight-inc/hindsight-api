@@ -1,3 +1,6 @@
 #!/bin/bash
-go build main.go
-./main
+if go build main.go; then
+	./main
+else
+	echo ---- Build failed ----
+fi
