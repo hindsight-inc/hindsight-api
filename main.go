@@ -1,8 +1,11 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 type User struct {
@@ -39,6 +42,10 @@ func UserInfo(context *gin.Context) {
 }
 
 func main() {
+	db, err := gorm.Open("mysql", "golang:password@/golang?charset=utf8&parseTime=True&loc=Local")
+	log.Println(err)
+	defer db.Close()
+
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -46,7 +53,8 @@ func main() {
 		})
 	})
 
-	router.POST("/login", UserLogin)
+	router.POST("/user/register", UserInfo)
+	router.POST("/user/login", UserLogin)
 	router.GET("/user", UserInfo)
 
 	router.Run()
