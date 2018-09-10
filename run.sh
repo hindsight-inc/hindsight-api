@@ -1,5 +1,5 @@
 #!/bin/bash
-if go build main.go; then
+if go build ./...; then
 	./main
 else
 	echo ---- Build failed ----

@@ -1,36 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"./database"
 )
-
-///	DB
-
-type Database struct {
-	*gorm.DB
-}
-
-var DB *gorm.DB
-
-// Opening a database and save the reference to `Database` struct.
-func Init() *gorm.DB {
-	//db, err := gorm.Open("sqlite3", "./../gorm.db")
-	db, err := gorm.Open("mysql", "golang:password@/golang?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		fmt.Println("db err: ", err)
-	}
-	db.DB().SetMaxIdleConns(10)
-	//db.LogMode(true)
-	DB = db
-	return DB
-}
-
-//var db gorm.DB
 
 type User struct {
 	gorm.Model
@@ -51,14 +26,13 @@ curl -v -X POST \
   -d '{ "username": "username001", "password": "password001" }'
 */
 func UserRegister(context *gin.Context) {
-	var json User
-	if err := context.ShouldBindJSON(&json); err != nil {
+	db := database.GetDB()
+	var user User
+	if err := context.ShouldBindJSON(&user); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	log.Println(DB)
-	log.Println(json)
-	DB.Create(&User{Username: json.Username, Password: json.Password})
+	db.Create(&User{Username: user.Username, Password: user.Password})
 	context.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
@@ -69,12 +43,12 @@ curl -v -X POST \
   -d '{ "username": "username001", "password": "password001" }'
 */
 func UserLogin(context *gin.Context) {
-	var json User
-	if err := context.ShouldBindJSON(&json); err != nil {
+	var user User
+	if err := context.ShouldBindJSON(&user); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if json.Username != "username001" || json.Password != "password001" {
+	if user.Username != "username001" || user.Password != "password001" {
 		context.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
@@ -87,23 +61,9 @@ func UserInfo(context *gin.Context) {
 }
 
 func main() {
-	/*
-	var err error
-	db, err := gorm.Open("mysql", "golang:password@/golang?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		log.Println(err)
-		panic("failed to connect database")
-	}
-	*/
-	//db.DB().SetMaxIdleConns(10)
-	//db.LogMode(true)
-	//defer db.Close()
-	//log.Println(db)
-	//db.Create(&User{Username: "admin", Password: "password"})
-
-	DB = Init()
-	DB.AutoMigrate(&User{})
-	defer DB.Close()
+	db := database.Init()
+	db.AutoMigrate(&User{})
+	defer db.Close()
 
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
