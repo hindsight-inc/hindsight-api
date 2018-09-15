@@ -1,6 +1,7 @@
 #!/bin/bash
-if go build ./...; then
-	./main
+rm hindsight
+if go build; then
+	./hindsight
 else
 	echo ---- Build failed ----
 fi

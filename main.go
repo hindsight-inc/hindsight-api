@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"./database"
+	"hindsight/database"
+	"hindsight/topic"
 )
 
 type User struct {
@@ -72,9 +73,18 @@ func main() {
 		})
 	})
 
+	//	TODO: FB user study
 	router.POST("/user/register", UserRegister)
 	router.POST("/user/login", UserLogin)
 	router.GET("/user", UserInfo)
+
+	//	TODO: dummy code here for now
+	router.GET("/users", DummyUsersList)
+	router.GET("/users/:uid", DummyUsersInfo)
+
+	router.GET("/topics", topic.List)
+	router.GET("/topics/:id", topic.Detail)
+	router.POST("/topics", topic.Create)
 
 	router.Run()
 }
