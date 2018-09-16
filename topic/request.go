@@ -14,26 +14,26 @@ func (self *Topic) Response() gin.H {
 }
 
 /*
-	http://localhost:8080/topics
+	http://localhost:8080/topics?offset=0&limit=5
 */
 func List(c *gin.Context) {
-	topic1 := Topic{Title: "Mock Title 01", Content: "Mock content 01."}
-	topic2 := Topic{Title: "Mock Title 02", Content: "Mock content 02."}
-	topic3 := Topic{Title: "Mock Title 03", Content: "Mock content 03."}
-	topics := []gin.H{
-		topic1.Response(),
-		topic2.Response(),
-		topic3.Response(),
-	}
+	offset := c.DefaultQuery("offset", "0")
+	limit := c.DefaultQuery("limit", kPageSize)
+	db := database.GetDB()
+	var topics []Topic
+	db.Order("updated_at desc, created_at desc").Offset(offset).Limit(limit).Find(&topics)
+	//c.JSON(200, gin.H{"limit": limit})
 	c.JSON(200, topics)
 }
 
 /*
-	http://localhost:8080/topics/42
+	http://localhost:8080/topics/1
 */
 func Detail(c *gin.Context) {
-	//id := c.Param("id")
-	topic := Topic{Title: "Mock Title 01", Content: "This is mock content 01.\n这是一个UTF8测试。"}
+	db := database.GetDB()
+	id := c.Param("id")
+	var topic Topic
+	db.First(&topic, id)
 	c.JSON(200, topic)
 }
 

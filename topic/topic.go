@@ -4,6 +4,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const kPageSize = "10"
+
 type Topic struct {
 	gorm.Model
 	Title string `json:"title"`
