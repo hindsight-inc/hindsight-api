@@ -64,6 +64,7 @@ func UserInfo(context *gin.Context) {
 func main() {
 	db := database.Init()
 	db.AutoMigrate(&User{})
+	db.AutoMigrate(&topic.Topic{})
 	defer db.Close()
 
 	router := gin.Default()
