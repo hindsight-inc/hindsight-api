@@ -64,6 +64,22 @@ func UserInfo(context *gin.Context) {
 	context.JSON(200, user.Response())
 }
 
+/*
+curl -v POST \
+  http://localhost:8080/login \
+  -H 'content-type: application/json' \
+  -d '{ "username": "admin", "password": "admin" }'
+
+curl -v GET \
+  http://localhost:8080/auth/refresh_token \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+
+curl -v GET \
+  http://localhost:8080/auth/hello \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
 func helloHandler(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	user, _ := c.Get("uid")
@@ -87,7 +103,7 @@ func main() {
 		MaxRefresh:  time.Hour,
 		IdentityKey: "uid",
 
-		//	get identity, i.e. Username
+		//	get identity from json, i.e. Username
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*User); ok {
 				return jwt.MapClaims{
@@ -96,13 +112,14 @@ func main() {
 			}
 			return jwt.MapClaims{}
 		},
-		//	get user
+		//	get user from identity
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &User{
 				Username: claims["uid"].(string),
 			}
 		},
+		//	login: `admin` and `test` can login
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var user User
 			if err := c.ShouldBind(&user); err != nil {
@@ -120,6 +137,7 @@ func main() {
 
 			return nil, jwt.ErrFailedAuthentication
 		},
+		//	access control: `admin` is authorized
 		Authorizator: func(data interface{}, c *gin.Context) bool {
 			if v, ok := data.(*User); ok && v.Username == "admin" {
 				return true
@@ -164,22 +182,6 @@ func main() {
 	})
 
 	//	auth
-/*
-curl -v POST \
-  http://localhost:8080/login \
-  -H 'content-type: application/json' \
-  -d '{ "username": "admin", "password": "admin" }'
-
-curl -v GET \
-  http://localhost:8080/auth/refresh_token \
-  -H 'content-type: application/json' \
-  -H 'Authorization:Bearer xxx'
-
-curl -v GET \
-  http://localhost:8080/auth/hello \
-  -H 'content-type: application/json' \
-  -H 'Authorization:Bearer xxx'
-*/
 	r.POST("/login", authMiddleware.LoginHandler)
 	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
