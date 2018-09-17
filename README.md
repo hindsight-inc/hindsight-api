@@ -1,8 +1,10 @@
-# hindsight-api
+# Project hindsight-api
 
 RESTful server for the Hindsight project.
 
-## Setup
+# Setup
+
+## Go
 
 [gostart](https://github.com/alco/gostart#faq0)
 
@@ -15,3 +17,14 @@ RESTful server for the Hindsight project.
 ## MySQL
 
 - Recommended client: `TablePlus` (`Sequel Pro` doesn't support newest encryption protocols)
+
+### Local test environment: macOS
+
+- `brew install mysql`
+- Starting service
+  - Background: `brew services start mysql`
+  - Current session: `mysql.server start`
+- `mysql -uroot`
+- `CREATE USER 'golang'@'localhost' IDENTIFIED BY 'password';`
+- `GRANT ALL PRIVILEGES ON * . * TO 'golang'@'localhost';`
+- `create database golang;`
