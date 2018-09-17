@@ -1,9 +1,12 @@
 package main
 
 import (
+	"log"
+	"time"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/appleboy/gin-jwt"
 	"hindsight/database"
 	"hindsight/topic"
 )
@@ -61,31 +64,147 @@ func UserInfo(context *gin.Context) {
 	context.JSON(200, user.Response())
 }
 
+func helloHandler(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	user, _ := c.Get("uid")
+	c.JSON(200, gin.H{
+		"userID":   claims["uid"],
+		"username": user.(*User).Username,
+		"text":     "Hello World.",
+	})
+}
+
 func main() {
 	db := database.Init()
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&topic.Topic{})
 	defer db.Close()
 
-	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
+	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
+		Realm:       "test zone",
+		Key:         []byte("secret key is required"),
+		Timeout:     time.Hour,
+		MaxRefresh:  time.Hour,
+		IdentityKey: "uid",
+
+		//	get identity, i.e. Username
+		PayloadFunc: func(data interface{}) jwt.MapClaims {
+			if v, ok := data.(*User); ok {
+				return jwt.MapClaims{
+					"uid": v.Username,
+				}
+			}
+			return jwt.MapClaims{}
+		},
+		//	get user
+		IdentityHandler: func(c *gin.Context) interface{} {
+			claims := jwt.ExtractClaims(c)
+			return &User{
+				Username: claims["uid"].(string),
+			}
+		},
+		Authenticator: func(c *gin.Context) (interface{}, error) {
+			var user User
+			if err := c.ShouldBind(&user); err != nil {
+				return "", jwt.ErrMissingLoginValues
+			}
+			username := user.Username
+			password := user.Password
+
+			if (username == "admin" && password == "admin") || (username == "test" && password == "test") {
+				return &User{
+					Username: username,
+					Password: password,
+				}, nil
+			}
+
+			return nil, jwt.ErrFailedAuthentication
+		},
+		Authorizator: func(data interface{}, c *gin.Context) bool {
+			if v, ok := data.(*User); ok && v.Username == "admin" {
+				return true
+			}
+
+			return false
+		},
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code":    code,
+				"message": message,
+			})
+		},
+		// TokenLookup is a string in the form of "<source>:<name>" that is used
+		// to extract token from the request.
+		// Optional. Default value "header:Authorization".
+		// Possible values:
+		// - "header:<name>"
+		// - "query:<name>"
+		// - "cookie:<name>"
+		TokenLookup: "header: Authorization, query: token, cookie: jwt",
+		// TokenLookup: "query:token",
+		// TokenLookup: "cookie:token",
+
+		// TokenHeadName is a string in the header. Default value is "Bearer"
+		TokenHeadName: "Bearer",
+
+		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
+		TimeFunc: time.Now,
+	})
+
+	if err != nil {
+		log.Fatal("JWT Error:" + err.Error())
+	}
+
+	//	route
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
 
+	//	auth
+/*
+curl -v POST \
+  http://localhost:8080/login \
+  -H 'content-type: application/json' \
+  -d '{ "username": "admin", "password": "admin" }'
+
+curl -v GET \
+  http://localhost:8080/auth/refresh_token \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+
+curl -v GET \
+  http://localhost:8080/auth/hello \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+	r.POST("/login", authMiddleware.LoginHandler)
+	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
+		claims := jwt.ExtractClaims(c)
+		log.Printf("NoRoute claims: %#v\n", claims)
+		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
+	})
+	auth := r.Group("/auth")
+	auth.Use(authMiddleware.MiddlewareFunc())
+	{
+		auth.GET("/hello", helloHandler)
+		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+	}
+
 	//	TODO: FB user study
-	router.POST("/user/register", UserRegister)
-	router.POST("/user/login", UserLogin)
-	router.GET("/user", UserInfo)
+	r.POST("/user/register", UserRegister)
+	r.POST("/user/login", UserLogin)
+	r.GET("/user", UserInfo)
 
 	//	TODO: dummy code here for now
-	router.GET("/users", DummyUsersList)
-	router.GET("/users/:uid", DummyUsersInfo)
+	r.GET("/users", DummyUsersList)
+	r.GET("/users/:uid", DummyUsersInfo)
 
-	router.GET("/topics", topic.List)
-	router.GET("/topics/:id", topic.Detail)
-	router.POST("/topics", topic.Create)
+	r.GET("/topics", topic.List)
+	r.GET("/topics/:id", topic.Detail)
+	r.POST("/topics", topic.Create)
 
-	router.Run()
+	r.Run()
 }
