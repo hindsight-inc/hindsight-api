@@ -9,8 +9,9 @@ import (
 )
 
 func GetMiddleware() *jwt.GinJWTMiddleware {
+	//https://godoc.org/gopkg.in/appleboy/gin-jwt.v2
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "test zone",
+		Realm:       "hindsight-inc",
 		Key:         []byte("secret key is required"),
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
@@ -85,7 +86,6 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 	if err != nil {
 		log.Fatal("JWT Error:" + err.Error())
 	}
-	log.Println("xxx")
 	return middleware
 }
 

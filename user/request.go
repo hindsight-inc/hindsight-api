@@ -23,8 +23,13 @@ func UserRegister(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	db.Create(&User{Username: user.Username, Password: user.Password})
-	context.JSON(http.StatusOK, gin.H{"status": "success"})
+	db.Where(User{Username: user.Username}).First(&user)
+	if user.ID == 0 {
+		db.Create(&User{Username: user.Username, Password: user.Password})
+		context.JSON(http.StatusOK, user.Response())
+	} else {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
+	}
 }
 
 /*
