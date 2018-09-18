@@ -8,21 +8,19 @@ import (
 	"hindsight/user"
 )
 
-const MainID = "id"
-
 func GetMiddleware() *jwt.GinJWTMiddleware {
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "test zone",
 		Key:         []byte("secret key is required"),
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
-		IdentityKey: MainID,
+		IdentityKey: user.IdentityKey,
 
 		//	get identity from json, i.e. Username
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*user.User); ok {
 				return jwt.MapClaims{
-					MainID: v.Username,
+					user.IdentityKey: v.Username,
 				}
 			}
 			return jwt.MapClaims{}
@@ -30,10 +28,7 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 		//	get user from identity
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			log.Println(claims)
-			log.Println(claims[MainID])
-			log.Println(claims[MainID].(string))
-			username := claims[MainID].(string)
+			username := claims[user.IdentityKey].(string)
 			return &user.User{
 				Username: username,
 			}

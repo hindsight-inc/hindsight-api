@@ -19,10 +19,11 @@ func DummyUsersInfo(context *gin.Context) {
 
 func HelloHandler(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
-	user, _ := c.Get("id")
+	user, _ := c.Get(IdentityKey)
 	c.JSON(200, gin.H{
-		"userID":   claims["id"],
+		"userID": claims[IdentityKey],
+		"user": user,
 		"username": user.(*User).Username,
-		"text":     "Hello World.",
+		"text": "Hello World.",
 	})
 }
