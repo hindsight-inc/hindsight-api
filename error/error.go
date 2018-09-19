@@ -6,25 +6,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ApiError struct {
-	code int
-	id string
-	message string
-}
+const DomainUserRegister = "user.register"
+const DomainUserLogin = "user.login"
 
-var UserRegisterExisting = ApiError{http.StatusBadRequest, "error.user.register.existing", "User already exists"}
+const ReasonDuplicatedEntry = "Duplicated entry"
+const ReasonInvalidJSON = "Invalid JSON"
 
-func H(e ApiError) (int, gin.H) {
-	return e.code, gin.H{"id": e.id, "message": e.message}
+func Bad(domain string, reason string, message string) (int, gin.H) {
+	return http.StatusBadRequest, gin.H{"domain": domain, "reason": reason, "message": message}
 }
 
 /*
+type ApiError struct {
+	code int
+	domain string
+	reason string
+}
+
 var apiErrors = map[string]ApiError {
 	"user.register.existing": ApiError{http.StatusBadRequest, "User already exists"},
 }
 
 func New(eid string) (int, gin.H) {
 	e := apiErrors[eid]
-	return e.code, gin.H{"id": eid, "message": e.message}
+	return e.code, gin.H{"id": eid, "reason": e.reason}
 }
 */

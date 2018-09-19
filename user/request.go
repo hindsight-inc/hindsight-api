@@ -21,7 +21,7 @@ func UserRegister(c *gin.Context) {
 	db := database.GetDB()
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(error.Bad(error.DomainUserRegister, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
 	db.Where(User{Username: user.Username}).First(&user)
@@ -29,9 +29,7 @@ func UserRegister(c *gin.Context) {
 		db.Create(&user)
 		c.JSON(http.StatusOK, user.Response())
 	} else {
-		//c.JSON(http.StatusBadRequest, error.New("User already exists"))
-		//c.JSON(error.New("user.register.existing"))
-		c.JSON(error.H(error.UserRegisterExisting))
+		c.JSON(error.Bad(error.DomainUserRegister, error.ReasonDuplicatedEntry, "User already exists"))
 	}
 }
 
@@ -44,7 +42,7 @@ curl -v -X POST \
 func UserLogin(c *gin.Context) {
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(error.Bad(error.DomainUserLogin, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
 	if user.Username != "username001" || user.Password != "password001" {
