@@ -12,13 +12,15 @@ import (
 
 var authMiddleware = auth.GetMiddleware()
 
-func main() {
+func setupDB() {
 	//	database
 	db := database.Init()
 	db.AutoMigrate(&user.User{})
 	db.AutoMigrate(&topic.Topic{})
 	defer db.Close()
+}
 
+func setupRouter() *gin.Engine {
 	//	route
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
@@ -56,5 +58,11 @@ func main() {
 	r.GET("/topics/:id", topic.Detail)
 	r.POST("/topics", topic.Create)
 
-	r.Run()
+	return r
+}
+
+func main() {
+	setupDB()
+	r := setupRouter()
+	r.Run(":8080")
 }
