@@ -12,7 +12,7 @@ func (self *User) Response() gin.H {
 }
 
 /*
-curl -v -X POST \
+curl -v POST \
   http://localhost:8080/user/register \
   -H 'content-type: application/json' \
   -d '{ "username": "username001", "password": "password001" }'

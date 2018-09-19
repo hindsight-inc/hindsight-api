@@ -12,14 +12,6 @@ import (
 
 var authMiddleware = auth.GetMiddleware()
 
-func setupDB() {
-	//	database
-	db := database.Init()
-	db.AutoMigrate(&user.User{})
-	db.AutoMigrate(&topic.Topic{})
-	defer db.Close()
-}
-
 func setupRouter() *gin.Engine {
 	//	route
 	r := gin.Default()
@@ -62,7 +54,12 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
-	setupDB()
+	//	database
+	db := database.Init()
+	db.AutoMigrate(&user.User{})
+	db.AutoMigrate(&topic.Topic{})
+	defer db.Close()
+
 	r := setupRouter()
 	r.Run(":8080")
 }
