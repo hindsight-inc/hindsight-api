@@ -4,6 +4,7 @@ import (
 	"log"
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
+	"github.com/jinzhu/gorm"
 	"hindsight/database"
 	"hindsight/user"
 	"hindsight/topic"
@@ -11,6 +12,13 @@ import (
 )
 
 var authMiddleware = auth.GetMiddleware()
+
+func setupDB() *gorm.DB {
+	db := database.Init()
+	db.AutoMigrate(&user.User{})
+	db.AutoMigrate(&topic.Topic{})
+	return db
+}
 
 func setupRouter() *gin.Engine {
 	//	route
@@ -54,10 +62,7 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
-	//	database
-	db := database.Init()
-	db.AutoMigrate(&user.User{})
-	db.AutoMigrate(&topic.Topic{})
+	db := setupDB()
 	defer db.Close()
 
 	r := setupRouter()

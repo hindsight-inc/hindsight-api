@@ -4,6 +4,7 @@ echo ---- Building ----
 if go build; then
 	echo ---- Testing ----
 	if go test; then
+		echo ---- Running ----
 		./hindsight
 	else
 		echo ---- Test failed ----
