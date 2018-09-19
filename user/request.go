@@ -7,7 +7,7 @@ import (
 )
 
 func (self *User) Response() gin.H {
-	return gin.H{"username": self.Username}
+	return gin.H{"id": self.ID, "username": self.Username}
 }
 
 /*
@@ -25,7 +25,7 @@ func UserRegister(context *gin.Context) {
 	}
 	db.Where(User{Username: user.Username}).First(&user)
 	if user.ID == 0 {
-		db.Create(&User{Username: user.Username, Password: user.Password})
+		db.Create(&user)
 		context.JSON(http.StatusOK, user.Response())
 	} else {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
