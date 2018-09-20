@@ -15,6 +15,10 @@ import (
 	"hindsight/error"
 )
 
+const kTestUsername = "test001"
+const kTestPassword = "password123"
+const kSomething = "sth"
+
 /*
 http://localhost:8080/ping
 */
@@ -42,13 +46,12 @@ func TestUserRegister(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: "test001", Password: "password123"}
+	u := user.User{Username: kTestUsername, Password: kTestPassword}
 	b, _ := json.Marshal(u)
 
 	//	permanently delete previous test users
 	db.Unscoped().Where(user.User{Username: u.Username}).Delete(&user.User{})
 
-	//	register test user
 	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
@@ -56,15 +59,89 @@ func TestUserRegister(t *testing.T) {
 	json.Unmarshal([]byte(w.Body.String()), &u)
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.True(t, u.ID > 0)
+}
 
-	//	do it again should fail
-	w = httptest.NewRecorder()
-	req, _ = http.NewRequest("POST", "/user/register", bytes.NewBuffer(b))
+func TestUserRegisterFailureDuplicated(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	b, _ := json.Marshal(u)
+
+	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
+
 	var e error.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Equal(t, error.DomainUserRegister, e.Domain)
 	assert.Equal(t, error.ReasonDuplicatedEntry, e.Reason)
+}
+
+/*
+curl -v POST \
+  http://localhost:8080/user/login \
+  -H 'content-type: application/json' \
+  -d '{ "username": "username001", "password": "password001" }'
+*/
+func TestUserLoginSuccess(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	b, _ := json.Marshal(u)
+
+	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	json.Unmarshal([]byte(w.Body.String()), &u)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.True(t, u.ID > 0)
+	assert.Equal(t, kTestUsername, u.Username)
+}
+
+func TestUserLoginFailureNonexistent(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	u := user.User{Username: kTestUsername + kSomething, Password: kTestPassword}
+	b, _ := json.Marshal(u)
+
+	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainUserLogin, e.Domain)
+	assert.Equal(t, error.ReasonNonexistentEntry, e.Reason)
+}
+
+func TestUserLoginFailureMismatch(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	u := user.User{Username: kTestUsername, Password: kTestPassword + kSomething}
+	b, _ := json.Marshal(u)
+
+	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainUserLogin, e.Domain)
+	assert.Equal(t, error.ReasonMismatchedEntry, e.Reason)
 }

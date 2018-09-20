@@ -1,6 +1,7 @@
 package user
 
 import (
+	//"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
@@ -12,12 +13,12 @@ func (self *User) Response() gin.H {
 }
 
 func UserRegister(c *gin.Context) {
-	db := database.GetDB()
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(error.Bad(error.DomainUserRegister, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
+	db := database.GetDB()
 	db.Where(User{Username: user.Username}).First(&user)
 	if user.ID == 0 {
 		db.Create(&user)
@@ -27,23 +28,24 @@ func UserRegister(c *gin.Context) {
 	}
 }
 
-/*
-curl -v POST \
-  http://localhost:8080/user/login \
-  -H 'content-type: application/json' \
-  -d '{ "username": "username001", "password": "password001" }'
-*/
 func UserLogin(c *gin.Context) {
-	var user User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var json User
+	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(error.Bad(error.DomainUserLogin, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
-	if user.Username != "username001" || user.Password != "password001" {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+	var user User
+	db := database.GetDB()
+	db.Where(User{Username: json.Username}).First(&user)
+	if user.ID == 0 {
+		c.JSON(error.Unauthorized(error.DomainUserLogin, error.ReasonNonexistentEntry, "User not found"))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "success"})
+	if user.Password != json.Password {
+		c.JSON(error.Unauthorized(error.DomainUserLogin, error.ReasonMismatchedEntry, "Wrong password"))
+		return
+	}
+	c.JSON(http.StatusOK, user.Response())
 }
 
 func UserInfo(c *gin.Context) {

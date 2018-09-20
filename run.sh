@@ -1,9 +1,9 @@
 #!/bin/bash
-rm hindsight
+rm -f hindsight
 echo ---- Building ----
 if go build; then
 	echo ---- Testing ----
-	if go test; then
+	if go test -p 1; then
 		echo ---- Running ----
 		./hindsight
 	else
