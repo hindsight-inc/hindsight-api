@@ -6,6 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type APIError struct {
+	Domain string `json:"domain"`
+	Reason string `json:"reason"`
+	Message string `json:"message"`
+}
+
 const DomainUserRegister = "user.register"
 const DomainUserLogin = "user.login"
 

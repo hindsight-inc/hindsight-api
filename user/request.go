@@ -11,12 +11,6 @@ func (self *User) Response() gin.H {
 	return gin.H{"id": self.ID, "username": self.Username}
 }
 
-/*
-curl -v POST \
-  http://localhost:8080/user/register \
-  -H 'content-type: application/json' \
-  -d '{ "username": "username001", "password": "password001" }'
-*/
 func UserRegister(c *gin.Context) {
 	db := database.GetDB()
 	var user User
@@ -34,7 +28,7 @@ func UserRegister(c *gin.Context) {
 }
 
 /*
-curl -v -X POST \
+curl -v POST \
   http://localhost:8080/user/login \
   -H 'content-type: application/json' \
   -d '{ "username": "username001", "password": "password001" }'
