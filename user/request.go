@@ -18,6 +18,7 @@ func UserRegister(c *gin.Context) {
 		c.JSON(error.Bad(error.DomainUserRegister, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
+
 	db := database.GetDB()
 	db.Where(User{Username: user.Username}).First(&user)
 	if user.ID == 0 {
@@ -34,6 +35,7 @@ func UserLogin(c *gin.Context) {
 		c.JSON(error.Bad(error.DomainUserLogin, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
+
 	var user User
 	db := database.GetDB()
 	db.Where(User{Username: json.Username}).First(&user)
@@ -48,6 +50,9 @@ func UserLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, user.Response())
 }
 
+/*
+http://localhost:8080/user
+*/
 func UserInfo(c *gin.Context) {
 	user := User{Username: "username002"}
 	c.JSON(200, user.Response())

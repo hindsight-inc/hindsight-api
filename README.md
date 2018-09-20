@@ -28,3 +28,8 @@ RESTful server for the Hindsight project.
 - `CREATE USER 'golang'@'localhost' IDENTIFIED BY 'password';`
 - `GRANT ALL PRIVILEGES ON * . * TO 'golang'@'localhost';`
 - `create database golang;`
+
+## Tools
+
+- `run.sh`: build, test, and run
+- `edit.sh`: edit all source files like a pro
