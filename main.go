@@ -29,8 +29,11 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	//	public endpoint
+	//	TODO: FB user study
+	r.POST("/user/register", user.UserRegister)
+
 	//	auth
-	//authMiddleware := auth.GetMiddleware()
 	r.POST("/login", authMiddleware.LoginHandler)
 	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
@@ -40,9 +43,8 @@ func setupRouter() *gin.Engine {
 	auth := r.Group("/auth")
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
-		auth.GET("/hello", user.HelloHandler)
+		auth.GET("/ping", user.PingHandler)
 		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
-		auth.GET("/user", user.UserInfo)
 	}
 	authRoot := r.Group("/")
 	authRoot.Use(authMiddleware.MiddlewareFunc())
@@ -50,8 +52,6 @@ func setupRouter() *gin.Engine {
 		authRoot.GET("/user", user.UserInfo)
 	}
 
-	//	TODO: FB user study
-	r.POST("/user/register", user.UserRegister)
 	r.POST("/user/login", user.UserLogin)
 
 	//	TODO: dummy code here for now

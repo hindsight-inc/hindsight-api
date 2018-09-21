@@ -95,7 +95,7 @@ curl -v GET \
   -H 'Authorization:Bearer xxx'
 
 curl -v GET \
-  http://localhost:8080/auth/hello \
+  http://localhost:8080/auth/ping \
   -H 'content-type: application/json' \
   -H 'Authorization:Bearer xxx'
 */

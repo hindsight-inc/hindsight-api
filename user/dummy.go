@@ -17,13 +17,12 @@ func DummyUsersInfo(context *gin.Context) {
 	context.JSON(200, user.Response())
 }
 
-func HelloHandler(c *gin.Context) {
+func PingHandler(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	user, _ := c.Get(IdentityKey)
 	c.JSON(200, gin.H{
-		"userID": claims[IdentityKey],
-		"user": user,
-		"username": user.(*User).Username,
-		"text": "Hello World.",
+		"message": "pong",
+		"claim_id": claims[IdentityKey],
+		"username": user.(*User).Username,		//	TODO: cannot retrieve other fields - as design?
 	})
 }
