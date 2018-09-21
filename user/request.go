@@ -4,6 +4,7 @@ import (
 	//"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"github.com/appleboy/gin-jwt"
 	"hindsight/database"
 	"hindsight/error"
 )
@@ -66,9 +67,27 @@ func UserLogin(c *gin.Context) {
 }
 
 /*
-http://localhost:8080/user
+curl -v GET \
+  http://localhost:8080/user \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
 */
 func UserInfo(c *gin.Context) {
-	user := User{Username: "username002"}
-	c.JSON(200, user.Response())
+	var user User
+	claim := jwt.ExtractClaims(c)[IdentityKey]
+	if claim == nil {
+		c.JSON(error.Unauthorized(error.DomainUserInfo, error.ReasonEmptyEntry, "Missing authorization info"))
+		return
+	}
+	username := claim.(string)
+	//user, _ := c.Get(IdentityKey)
+	//username := user.(*User).Username
+	db := database.GetDB()
+	db.Where(User{Username: username}).First(&user)
+	if user.ID == 0 {
+		//	Shouldn't reach here unless user has been deleted but active token is not
+		c.JSON(error.Bad(error.DomainUserInfo, error.ReasonNonexistentEntry, "User not found"))
+		return
+	}
+	c.JSON(http.StatusOK, user)
 }

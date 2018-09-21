@@ -42,12 +42,17 @@ func setupRouter() *gin.Engine {
 	{
 		auth.GET("/hello", user.HelloHandler)
 		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+		auth.GET("/user", user.UserInfo)
+	}
+	authRoot := r.Group("/")
+	authRoot.Use(authMiddleware.MiddlewareFunc())
+	{
+		authRoot.GET("/user", user.UserInfo)
 	}
 
 	//	TODO: FB user study
 	r.POST("/user/register", user.UserRegister)
 	r.POST("/user/login", user.UserLogin)
-	r.GET("/user", user.UserInfo)
 
 	//	TODO: dummy code here for now
 	r.GET("/users", user.DummyUsersList)

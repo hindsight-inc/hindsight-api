@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
 	"hindsight/user"
+	apiError "hindsight/error"
 )
 
 func GetMiddleware() *jwt.GinJWTMiddleware {
@@ -19,7 +20,7 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 		MaxRefresh:  time.Hour,
 		IdentityKey: user.IdentityKey,
 
-		//	get identity from json, i.e. Username
+		//	TODO: replace user.Username with user.ID? Need to understand more about Claim
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*user.User); ok {
 				return jwt.MapClaims{
@@ -28,7 +29,7 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 			}
 			return jwt.MapClaims{}
 		},
-		//	get user from identity
+		//	see above
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			username := claims[user.IdentityKey].(string)
@@ -41,7 +42,6 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 			_, response, user := user.Authenticate(c)
 			json, _ := json.Marshal(response)
 			if user == nil {
-				//return nil, jwt.ErrFailedAuthentication
 				return nil, errors.New(string(json))
 			}
 			return user, nil
@@ -55,7 +55,8 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
-				"code":    code,
+				"domain": apiError.DomainAuthJWT,
+				"reason": apiError.ReasonUnauthorized,
 				"message": message,
 			})
 		},
