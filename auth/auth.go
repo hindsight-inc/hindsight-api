@@ -11,6 +11,11 @@ import (
 	apiError "hindsight/error"
 )
 
+type Token struct {
+	Expire string `json:"expire"`
+	Token string `json:"token"`
+}
+
 func GetMiddleware() *jwt.GinJWTMiddleware {
 	//https://godoc.org/gopkg.in/appleboy/gin-jwt.v2
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{

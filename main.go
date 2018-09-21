@@ -34,34 +34,33 @@ func setupRouter() *gin.Engine {
 	r.POST("/user/register", user.UserRegister)
 
 	//	auth
-	r.POST("/login", authMiddleware.LoginHandler)
+	r.POST("/user/login", authMiddleware.LoginHandler)
 	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
 		log.Printf("NoRoute claims: %#v\n", claims)
 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
+
 	auth := r.Group("/auth")
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.GET("/ping", user.PingHandler)
 		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
 	}
+
 	authRoot := r.Group("/")
 	authRoot.Use(authMiddleware.MiddlewareFunc())
 	{
 		authRoot.GET("/user", user.UserInfo)
+
+		authRoot.GET("/topics", topic.List)
+		authRoot.GET("/topics/:id", topic.Detail)
+		authRoot.POST("/topics", topic.Create)
 	}
 
-	r.POST("/user/login", user.UserLogin)
-
-	//	TODO: dummy code here for now
-	r.GET("/users", user.DummyUsersList)
-	r.GET("/users/:uid", user.DummyUsersInfo)
-
-	//	user
-	r.GET("/topics", topic.List)
-	r.GET("/topics/:id", topic.Detail)
-	r.POST("/topics", topic.Create)
+	//r.POST("/user/login", user.UserLogin)
+	//r.GET("/users", user.DummyUsersList)
+	//r.GET("/users/:uid", user.DummyUsersInfo)
 
 	return r
 }

@@ -11,6 +11,7 @@ import (
 	//"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
+	"hindsight/auth"
 	"hindsight/user"
 	"hindsight/error"
 )
@@ -100,10 +101,16 @@ func TestUserLoginSuccess(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 
-	json.Unmarshal([]byte(w.Body.String()), &u)
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.True(t, u.ID > 0)
-	assert.Equal(t, kTestUsername, u.Username)
+	//	authMiddleware.LoginHandler
+	var token auth.Token
+	json.Unmarshal([]byte(w.Body.String()), &token)
+	assert.NotEmpty(t, token.Expire)	// TODO: equal to or later than `now`
+	assert.NotEmpty(t, token.Token)
+	//	user.UserLogin
+	//json.Unmarshal([]byte(w.Body.String()), &u)
+	//assert.True(t, u.ID > 0)
+	//assert.Equal(t, kTestUsername, u.Username)
 }
 
 func TestUserLoginFailureNonexistent(t *testing.T) {
@@ -122,8 +129,12 @@ func TestUserLoginFailureNonexistent(t *testing.T) {
 	var e error.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Equal(t, error.DomainUserLogin, e.Domain)
-	assert.Equal(t, error.ReasonNonexistentEntry, e.Reason)
+	//	authMiddleware.LoginHandler
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+	//	user.UserLogin
+	//assert.Equal(t, error.DomainUserLogin, e.Domain)
+	//assert.Equal(t, error.ReasonNonexistentEntry, e.Reason)
 }
 
 func TestUserLoginFailureMismatch(t *testing.T) {
@@ -142,6 +153,6 @@ func TestUserLoginFailureMismatch(t *testing.T) {
 	var e error.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Equal(t, error.DomainUserLogin, e.Domain)
-	assert.Equal(t, error.ReasonMismatchedEntry, e.Reason)
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
 }
