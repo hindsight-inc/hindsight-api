@@ -34,8 +34,6 @@ func Authenticate(c *gin.Context) (int, gin.H, *User) {
 	if err := c.ShouldBindJSON(&json); err != nil {
 		code, response := error.Bad(error.DomainUserLogin, error.ReasonInvalidJSON, err.Error())
 		return code, response, nil
-		//c.JSON(error.Bad(error.DomainUserLogin, error.ReasonInvalidJSON, err.Error()))
-		//return
 	}
 
 	var user User
@@ -44,42 +42,27 @@ func Authenticate(c *gin.Context) (int, gin.H, *User) {
 	if user.ID == 0 {
 		code, response := error.Unauthorized(error.DomainUserLogin, error.ReasonNonexistentEntry, "User not found")
 		return code, response, nil
-		//c.JSON(error.Unauthorized(error.DomainUserLogin, error.ReasonNonexistentEntry, "User not found"))
-		//return
 	}
 	if user.Password != json.Password {
 		code, response := error.Unauthorized(error.DomainUserLogin, error.ReasonMismatchedEntry, "Wrong password")
 		return code, response, nil
-		//c.JSON(error.Unauthorized(error.DomainUserLogin, error.ReasonMismatchedEntry, "Wrong password"))
-		//return
 	}
 	return http.StatusOK, user.Response(), &user
-	//c.JSON(http.StatusOK, user.Response())
+}
+
+func Authorize(c *gin.Context, username string) bool {
+	var user User
+	db := database.GetDB()
+	db.Where(User{Username: username}).First(&user)
+	if user.ID == 0 {
+		return false
+	}
+	return true
 }
 
 func UserLogin(c *gin.Context) {
 	code, response, _ := Authenticate(c)
 	c.JSON(code, response)
-	/*
-	var json User
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(error.Bad(error.DomainUserLogin, error.ReasonInvalidJSON, err.Error()))
-		return
-	}
-
-	var user User
-	db := database.GetDB()
-	db.Where(User{Username: json.Username}).First(&user)
-	if user.ID == 0 {
-		c.JSON(error.Unauthorized(error.DomainUserLogin, error.ReasonNonexistentEntry, "User not found"))
-		return
-	}
-	if user.Password != json.Password {
-		c.JSON(error.Unauthorized(error.DomainUserLogin, error.ReasonMismatchedEntry, "Wrong password"))
-		return
-	}
-	c.JSON(http.StatusOK, user.Response())
-	*/
 }
 
 /*

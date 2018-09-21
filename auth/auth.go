@@ -36,40 +36,21 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 				Username: username,
 			}
 		},
+		//	login
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			/*
-			var u user.User
-			if err := c.ShouldBind(&u); err != nil {
-				return "", jwt.ErrMissingLoginValues
-			}
-			username := u.Username
-			password := u.Password
-
-			if (username == "admin" && password == "admin") || (username == "test" && password == "test") {
-				return &user.User{
-					Username: username,
-					Password: password,
-				}, nil
-			}
-
-			return nil, jwt.ErrFailedAuthentication
-			*/
 			_, response, user := user.Authenticate(c)
 			json, _ := json.Marshal(response)
 			if user == nil {
 				//return nil, jwt.ErrFailedAuthentication
 				return nil, errors.New(string(json))
 			}
-			log.Println(user)
 			return user, nil
 		},
-		//	access control: `admin` is authorized
+		//	access control
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*user.User); ok {
-				log.Println(v)
-				return true
+			if u, ok := data.(*user.User); ok {
+				return user.Authorize(c, u.Username)
 			}
-
 			return false
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
