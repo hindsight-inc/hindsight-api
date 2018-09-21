@@ -3,6 +3,8 @@ package auth
 import (
 	"log"
 	"time"
+	"encoding/json"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
 	"hindsight/user"
@@ -34,8 +36,8 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 				Username: username,
 			}
 		},
-		//	login: `admin` and `test` can login
 		Authenticator: func(c *gin.Context) (interface{}, error) {
+			/*
 			var u user.User
 			if err := c.ShouldBind(&u); err != nil {
 				return "", jwt.ErrMissingLoginValues
@@ -51,10 +53,20 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 			}
 
 			return nil, jwt.ErrFailedAuthentication
+			*/
+			_, response, user := user.Authenticate(c)
+			json, _ := json.Marshal(response)
+			if user == nil {
+				//return nil, jwt.ErrFailedAuthentication
+				return nil, errors.New(string(json))
+			}
+			log.Println(user)
+			return user, nil
 		},
 		//	access control: `admin` is authorized
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*user.User); ok && v.Username == "admin" {
+			if v, ok := data.(*user.User); ok {
+				log.Println(v)
 				return true
 			}
 
@@ -93,7 +105,7 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 curl -v POST \
   http://localhost:8080/login \
   -H 'content-type: application/json' \
-  -d '{ "username": "admin", "password": "admin" }'
+  -d '{ "username": "admin", "password": "password" }'
 
 curl -v GET \
   http://localhost:8080/auth/refresh_token \
