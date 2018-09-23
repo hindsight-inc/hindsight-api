@@ -87,20 +87,3 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 	}
 	return middleware
 }
-
-/*
-curl -v POST \
-  http://localhost:8080/login \
-  -H 'content-type: application/json' \
-  -d '{ "username": "admin", "password": "password" }'
-
-curl -v GET \
-  http://localhost:8080/auth/refresh_token \
-  -H 'content-type: application/json' \
-  -H 'Authorization:Bearer xxx'
-
-curl -v GET \
-  http://localhost:8080/auth/ping \
-  -H 'content-type: application/json' \
-  -H 'Authorization:Bearer xxx'
-*/

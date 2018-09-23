@@ -163,11 +163,10 @@ func TestUserLoginFailureMismatch(t *testing.T) {
 
 /*
 curl -v GET \
-  http://localhost:8080/auth/ping \
+  http://localhost:8080/token/ping \
   -H 'Content-Type: application/json' \
   -H 'Authorization:Bearer xxx'
 */
-
 func TestUserAuthPingSuccess(t *testing.T) {
 	db := setupDB()
 	defer db.Close()
@@ -175,7 +174,7 @@ func TestUserAuthPingSuccess(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("GET", "/auth/ping", nil)
+	req, _ := http.NewRequest("GET", "/token/ping", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Bearer " + Token)
 	router.ServeHTTP(w, req)
@@ -185,3 +184,10 @@ func TestUserAuthPingSuccess(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "pong")
 	assert.Contains(t, w.Body.String(), kTestUsername)
 }
+
+/*
+curl -v GET \
+  http://localhost:8080/token/refresh \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
