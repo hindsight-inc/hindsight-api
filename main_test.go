@@ -167,7 +167,8 @@ curl -v GET \
   -H 'Content-Type: application/json' \
   -H 'Authorization:Bearer xxx'
 */
-func TestUserAuthPingSuccess(t *testing.T) {
+func TestUserTokenPingSuccess(t *testing.T) {
+	//	TODO: figure out why test would fail without `setupDB`
 	db := setupDB()
 	defer db.Close()
 	router := setupRouter()
@@ -185,9 +186,66 @@ func TestUserAuthPingSuccess(t *testing.T) {
 	assert.Contains(t, w.Body.String(), kTestUsername)
 }
 
+func TestUserTokenPingFailureUnauthorized(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/token/ping", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token + kSomething)
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
+
 /*
 curl -v GET \
   http://localhost:8080/token/refresh \
   -H 'content-type: application/json' \
   -H 'Authorization:Bearer xxx'
 */
+func TestUserTokenRefreshSuccess(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/token/refresh", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var token auth.Token
+	json.Unmarshal([]byte(w.Body.String()), &token)
+	assert.NotEmpty(t, token.Expire)	// TODO: equal to or later than `now`
+	assert.NotEmpty(t, token.Token)		// TODO: validate it's a correct JWT token
+	Token = token.Token
+}
+
+func TestUserTokenRefreshFailureUnauthorized(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/token/refresh", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token + kSomething)
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
