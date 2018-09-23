@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	//"time"
 	"net/http"
 	"net/http/httptest"
 	"encoding/json"
@@ -82,6 +83,8 @@ func TestUserRegisterFailureDuplicated(t *testing.T) {
 	assert.Equal(t, error.ReasonDuplicatedEntry, e.Reason)
 }
 
+var Token string
+
 /*
 curl -v POST \
   http://localhost:8080/user/login \
@@ -106,7 +109,8 @@ func TestUserLoginSuccess(t *testing.T) {
 	var token auth.Token
 	json.Unmarshal([]byte(w.Body.String()), &token)
 	assert.NotEmpty(t, token.Expire)	// TODO: equal to or later than `now`
-	assert.NotEmpty(t, token.Token)
+	assert.NotEmpty(t, token.Token)		// TODO: validate it's a correct JWT token
+	Token = token.Token
 	//	user.UserLogin
 	//json.Unmarshal([]byte(w.Body.String()), &u)
 	//assert.True(t, u.ID > 0)
@@ -155,4 +159,29 @@ func TestUserLoginFailureMismatch(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 	assert.Equal(t, error.DomainAuthJWT, e.Domain)
 	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
+
+/*
+curl -v GET \
+  http://localhost:8080/auth/ping \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+
+func TestUserAuthPingSuccess(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/auth/ping", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	//	something like {"claim_id":"test001","message":"pong","username":"test001"}
+	assert.Contains(t, w.Body.String(), "pong")
+	assert.Contains(t, w.Body.String(), kTestUsername)
 }
