@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"encoding/json"
 	"bytes"
+	"strconv"
 	"testing"
 
 	//"github.com/gin-gonic/gin"
@@ -259,6 +260,8 @@ func TestUserTokenRefreshFailureUnauthorized(t *testing.T) {
 	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
 }
 
+var TopicID uint
+
 /*
 curl -v POST \
   http://localhost:8080/topics \
@@ -288,6 +291,8 @@ func TestTopicCreate(t *testing.T) {
 	json.Unmarshal([]byte(w.Body.String()), &t2)
 	assert.Equal(t, t2.Title, kTestTopicTitle)
 	assert.Equal(t, t2.Content, kTestTopicContent)
+
+	TopicID = t2.ID
 }
 
 /*
@@ -296,5 +301,49 @@ curl -v GET \
   -H 'content-type: application/json' \
   -H 'Authorization:Bearer xxx'
 */
-//	http://localhost:8080/topics/1
-// TODO
+func TestTopicList1(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/topics?offset=0&limit=1", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	topics := make([]topic.Topic, 0)
+	json.Unmarshal([]byte(w.Body.String()), &topics)
+	t0 := topics[0]
+	assert.Equal(t, t0.ID, TopicID)
+	assert.Equal(t, t0.Title, kTestTopicTitle)
+	assert.Equal(t, t0.Content, kTestTopicContent)
+}
+
+/*
+curl -v GET \
+  http://localhost:8080/topics/xxx \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+func TestTopicDetail(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/topics/" + strconv.FormatUint(uint64(TopicID), 10), nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var t0 topic.Topic
+	json.Unmarshal([]byte(w.Body.String()), &t0)
+	assert.Equal(t, t0.ID, TopicID)
+	assert.Equal(t, t0.Title, kTestTopicTitle)
+	assert.Equal(t, t0.Content, kTestTopicContent)
+}
