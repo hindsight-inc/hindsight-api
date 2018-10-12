@@ -14,12 +14,18 @@ import (
 
 	"hindsight/auth"
 	"hindsight/user"
+	"hindsight/topic"
 	"hindsight/error"
 )
 
-const kTestUsername = "test001"
-const kTestPassword = "password123"
+const kTestUserUsername = "test001"
+const kTestUserPassword = "password123"
+const kTestTopicTitle = "Script Test 测试"
+const kTestTopicContent = "Test contents from script.\n测试内容"
 const kSomething = "sth"
+
+
+//	API Unit Tests
 
 /*
 http://localhost:8080/ping
@@ -36,6 +42,9 @@ func TestPingRoute(t *testing.T) {
 	assert.Equal(t, "{\"message\":\"pong\"}", w.Body.String())
 }
 
+
+//	API Integration Tests
+
 /*
 curl -v POST \
   http://localhost:8080/user/register \
@@ -48,7 +57,7 @@ func TestUserRegister(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	//	permanently delete previous test users
@@ -69,7 +78,7 @@ func TestUserRegisterFailureDuplicated(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(b))
@@ -97,7 +106,7 @@ func TestUserLoginSuccess(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
@@ -114,7 +123,7 @@ func TestUserLoginSuccess(t *testing.T) {
 	//	user.UserLogin
 	//json.Unmarshal([]byte(w.Body.String()), &u)
 	//assert.True(t, u.ID > 0)
-	//assert.Equal(t, kTestUsername, u.Username)
+	//assert.Equal(t, kTestUserUsername, u.Username)
 }
 
 func TestUserLoginFailureNonexistent(t *testing.T) {
@@ -123,7 +132,7 @@ func TestUserLoginFailureNonexistent(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername + kSomething, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername + kSomething, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
@@ -147,7 +156,7 @@ func TestUserLoginFailureMismatch(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword + kSomething}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword + kSomething}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
@@ -183,7 +192,7 @@ func TestUserTokenPingSuccess(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	//	something like {"claim_id":"test001","message":"pong","username":"test001"}
 	assert.Contains(t, w.Body.String(), "pong")
-	assert.Contains(t, w.Body.String(), kTestUsername)
+	assert.Contains(t, w.Body.String(), kTestUserUsername)
 }
 
 func TestUserTokenPingFailureUnauthorized(t *testing.T) {
@@ -249,3 +258,43 @@ func TestUserTokenRefreshFailureUnauthorized(t *testing.T) {
 	assert.Equal(t, error.DomainAuthJWT, e.Domain)
 	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
 }
+
+/*
+curl -v POST \
+  http://localhost:8080/topics \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx' \
+  -d '{ "title": "Title Test 001", "content": "Test contents from script." }'
+*/
+func TestTopicCreate(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	t1 := topic.Topic{Title: kTestTopicTitle, Content: kTestTopicContent}
+	b, _ := json.Marshal(t1)
+
+	//	permanently delete previous test topics
+	db.Unscoped().Where(topic.Topic{Title: t1.Title, Content: t1.Content}).Delete(&topic.Topic{})
+
+	req, _ := http.NewRequest("POST", "/topics", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var t2 topic.Topic
+	json.Unmarshal([]byte(w.Body.String()), &t2)
+	assert.Equal(t, t2.Title, kTestTopicTitle)
+	assert.Equal(t, t2.Content, kTestTopicContent)
+}
+
+/*
+curl -v GET \
+  http://localhost:8080/topics?offset=0&limit=5 \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+//	http://localhost:8080/topics/1
+// TODO

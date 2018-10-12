@@ -53,7 +53,7 @@ func setupRouter() *gin.Engine {
 	{
 		authRoot.GET("/user", user.UserInfo)
 
-		authRoot.GET("/topics", topic.List)
+		//authRoot.GET("/topics", topic.List)
 		authRoot.GET("/topics/:id", topic.Detail)
 		authRoot.POST("/topics", topic.Create)
 	}
