@@ -46,6 +46,8 @@ func TestPingRoute(t *testing.T) {
 
 //	API Integration Tests
 
+var UserID uint
+
 /*
 curl -v POST \
   http://localhost:8080/user/register \
@@ -71,6 +73,8 @@ func TestUserRegister(t *testing.T) {
 	json.Unmarshal([]byte(w.Body.String()), &u)
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.True(t, u.ID > 0)
+
+	UserID = u.ID
 }
 
 func TestUserRegisterFailureDuplicated(t *testing.T) {
@@ -291,6 +295,7 @@ func TestTopicCreate(t *testing.T) {
 	json.Unmarshal([]byte(w.Body.String()), &t2)
 	assert.Equal(t, t2.Title, kTestTopicTitle)
 	assert.Equal(t, t2.Content, kTestTopicContent)
+	assert.True(t, t2.ID > 0)
 
 	TopicID = t2.ID
 }

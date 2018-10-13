@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
+	"hindsight/user"
+	"hindsight/error"
 )
 
 func (self *Topic) Response() gin.H {
@@ -31,13 +33,20 @@ func Detail(c *gin.Context) {
 }
 
 func Create(c *gin.Context) {
+	u := user.Current(c)
+	if u == nil {
+		//	Shouldn't reach here unless user has been deleted but active token is not
+		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonNonexistentEntry, "User not found"))
+		return
+	}
+
 	db := database.GetDB()
-	var topic Topic
-	if err := c.ShouldBindJSON(&topic); err != nil {
+	var topicCreator TopicCreator
+	if err := c.ShouldBindJSON(&topicCreator); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	topic = Topic{Title: topic.Title, Content: topic.Content}
+	topic := Topic{Title: topicCreator.Title, Content: topicCreator.Content, AuthorID: u.ID}
 	db.Create(&topic)
 	c.JSON(http.StatusOK, topic)
 }
