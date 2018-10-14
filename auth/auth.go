@@ -21,8 +21,8 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "hindsight-inc",
 		Key:         []byte("secret key is required"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
+		Timeout:     time.Hour * 99999,
+		MaxRefresh:  time.Hour * 99999,
 		IdentityKey: user.IdentityKey,
 
 		//	TODO: replace user.Username with user.ID? Need to understand more about Claim
