@@ -41,11 +41,11 @@ func setupRouter() *gin.Engine {
 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
 
-	auth := r.Group("/auth")
+	auth := r.Group("/token")
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.GET("/ping", user.PingHandler)
-		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+		auth.GET("/refresh", authMiddleware.RefreshHandler)
 	}
 
 	authRoot := r.Group("/")

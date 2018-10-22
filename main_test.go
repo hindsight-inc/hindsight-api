@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	//"time"
 	"net/http"
 	"net/http/httptest"
 	"encoding/json"
 	"bytes"
+	"strconv"
 	"testing"
 
 	//"github.com/gin-gonic/gin"
@@ -13,12 +15,18 @@ import (
 
 	"hindsight/auth"
 	"hindsight/user"
+	"hindsight/topic"
 	"hindsight/error"
 )
 
-const kTestUsername = "test001"
-const kTestPassword = "password123"
+const kTestUserUsername = "test001"
+const kTestUserPassword = "password123"
+const kTestTopicTitle = "Script Test 测试"
+const kTestTopicContent = "Test contents from script.\n测试内容"
 const kSomething = "sth"
+
+
+//	API Unit Tests
 
 /*
 http://localhost:8080/ping
@@ -35,6 +43,11 @@ func TestPingRoute(t *testing.T) {
 	assert.Equal(t, "{\"message\":\"pong\"}", w.Body.String())
 }
 
+
+//	API Integration Tests
+
+var UserID uint
+
 /*
 curl -v POST \
   http://localhost:8080/user/register \
@@ -47,7 +60,7 @@ func TestUserRegister(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	//	permanently delete previous test users
@@ -60,6 +73,8 @@ func TestUserRegister(t *testing.T) {
 	json.Unmarshal([]byte(w.Body.String()), &u)
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.True(t, u.ID > 0)
+
+	UserID = u.ID
 }
 
 func TestUserRegisterFailureDuplicated(t *testing.T) {
@@ -68,7 +83,7 @@ func TestUserRegisterFailureDuplicated(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(b))
@@ -82,6 +97,8 @@ func TestUserRegisterFailureDuplicated(t *testing.T) {
 	assert.Equal(t, error.ReasonDuplicatedEntry, e.Reason)
 }
 
+var Token string
+
 /*
 curl -v POST \
   http://localhost:8080/user/login \
@@ -94,7 +111,7 @@ func TestUserLoginSuccess(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
@@ -106,11 +123,12 @@ func TestUserLoginSuccess(t *testing.T) {
 	var token auth.Token
 	json.Unmarshal([]byte(w.Body.String()), &token)
 	assert.NotEmpty(t, token.Expire)	// TODO: equal to or later than `now`
-	assert.NotEmpty(t, token.Token)
+	assert.NotEmpty(t, token.Token)		// TODO: validate it's a correct JWT token
+	Token = token.Token
 	//	user.UserLogin
 	//json.Unmarshal([]byte(w.Body.String()), &u)
 	//assert.True(t, u.ID > 0)
-	//assert.Equal(t, kTestUsername, u.Username)
+	//assert.Equal(t, kTestUserUsername, u.Username)
 }
 
 func TestUserLoginFailureNonexistent(t *testing.T) {
@@ -119,7 +137,7 @@ func TestUserLoginFailureNonexistent(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername + kSomething, Password: kTestPassword}
+	u := user.User{Username: kTestUserUsername + kSomething, Password: kTestUserPassword}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
@@ -143,7 +161,7 @@ func TestUserLoginFailureMismatch(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	u := user.User{Username: kTestUsername, Password: kTestPassword + kSomething}
+	u := user.User{Username: kTestUserUsername, Password: kTestUserPassword + kSomething}
 	b, _ := json.Marshal(u)
 
 	req, _ := http.NewRequest("POST", "/user/login", bytes.NewBuffer(b))
@@ -155,4 +173,182 @@ func TestUserLoginFailureMismatch(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 	assert.Equal(t, error.DomainAuthJWT, e.Domain)
 	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
+
+/*
+curl -v GET \
+  http://localhost:8080/token/ping \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+func TestUserTokenPingSuccess(t *testing.T) {
+	//	TODO: figure out why test would fail without `setupDB`
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/token/ping", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	//	something like {"claim_id":"test001","message":"pong","username":"test001"}
+	assert.Contains(t, w.Body.String(), "pong")
+	assert.Contains(t, w.Body.String(), kTestUserUsername)
+}
+
+func TestUserTokenPingFailureUnauthorized(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/token/ping", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token + kSomething)
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
+
+/*
+curl -v GET \
+  http://localhost:8080/token/refresh \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+func TestUserTokenRefreshSuccess(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/token/refresh", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var token auth.Token
+	json.Unmarshal([]byte(w.Body.String()), &token)
+	assert.NotEmpty(t, token.Expire)	// TODO: equal to or later than `now`
+	assert.NotEmpty(t, token.Token)		// TODO: validate it's a correct JWT token
+	Token = token.Token
+}
+
+func TestUserTokenRefreshFailureUnauthorized(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/token/refresh", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token + kSomething)
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
+
+var TopicID uint
+
+/*
+curl -v POST \
+  http://localhost:8080/topics \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx' \
+  -d '{ "title": "Title Test 001", "content": "Test contents from script." }'
+*/
+func TestTopicCreate(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	t1 := topic.Topic{Title: kTestTopicTitle, Content: kTestTopicContent}
+	b, _ := json.Marshal(t1)
+
+	//	permanently delete previous test topics
+	db.Unscoped().Where(topic.Topic{Title: t1.Title, Content: t1.Content}).Delete(&topic.Topic{})
+
+	req, _ := http.NewRequest("POST", "/topics", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var t2 topic.Topic
+	json.Unmarshal([]byte(w.Body.String()), &t2)
+	assert.Equal(t, t2.Title, kTestTopicTitle)
+	assert.Equal(t, t2.Content, kTestTopicContent)
+	assert.True(t, t2.ID > 0)
+
+	TopicID = t2.ID
+}
+
+/*
+curl -v GET \
+  http://localhost:8080/topics?offset=0&limit=5 \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+func TestTopicList1(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/topics?offset=0&limit=1", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	topics := make([]topic.Topic, 0)
+	json.Unmarshal([]byte(w.Body.String()), &topics)
+	t0 := topics[0]
+	assert.Equal(t, t0.ID, TopicID)
+	assert.Equal(t, t0.Title, kTestTopicTitle)
+	assert.Equal(t, t0.Content, kTestTopicContent)
+}
+
+/*
+curl -v GET \
+  http://localhost:8080/topics/xxx \
+  -H 'content-type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+func TestTopicDetail(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/topics/" + strconv.FormatUint(uint64(TopicID), 10), nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var t0 topic.Topic
+	json.Unmarshal([]byte(w.Body.String()), &t0)
+	assert.Equal(t, t0.ID, TopicID)
+	assert.Equal(t, t0.Title, kTestTopicTitle)
+	assert.Equal(t, t0.Content, kTestTopicContent)
 }

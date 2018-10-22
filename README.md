@@ -37,3 +37,17 @@ RESTful server for the Hindsight project.
 
 - `run.sh`: build, test, and run
 - `edit.sh`: edit all source files like a pro
+
+# Documentation & testing
+
+## GoDoc
+
+TODO
+
+## cURL & API definition
+
+Check `main_test.go` for sequential integration tests
+
+## Postman
+
+https://hindsight-inc.postman.co/workspaces?type=team

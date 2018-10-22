@@ -21,8 +21,8 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "hindsight-inc",
 		Key:         []byte("secret key is required"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
+		Timeout:     time.Hour * 99999,
+		MaxRefresh:  time.Hour * 99999,
 		IdentityKey: user.IdentityKey,
 
 		//	TODO: replace user.Username with user.ID? Need to understand more about Claim
@@ -87,20 +87,3 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 	}
 	return middleware
 }
-
-/*
-curl -v POST \
-  http://localhost:8080/login \
-  -H 'content-type: application/json' \
-  -d '{ "username": "admin", "password": "password" }'
-
-curl -v GET \
-  http://localhost:8080/auth/refresh_token \
-  -H 'content-type: application/json' \
-  -H 'Authorization:Bearer xxx'
-
-curl -v GET \
-  http://localhost:8080/auth/ping \
-  -H 'content-type: application/json' \
-  -H 'Authorization:Bearer xxx'
-*/
