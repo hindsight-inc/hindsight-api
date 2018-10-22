@@ -6,11 +6,15 @@ RESTful server for the Hindsight project.
 
 ## Go
 
+- `brew install go`
+
+## Workspace
+
 [gostart](https://github.com/alco/gostart#faq0)
 
 - Add `export GOPATH=$HOME/go` in your `.zshrc`
 - `cd $GOPATH && mkdir src && cd src`
-- `git clone git@github.com:hindsight-inc/hindsight-api.git`
+- `git clone git@github.com:hindsight-inc/hindsight-api.git hindsight && cd hindsight-api`
 - `go get ./...`: this puts dependencies in `$GOPATH/src`
 - `./run.sh`
 
