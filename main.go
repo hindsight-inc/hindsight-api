@@ -5,10 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
 	"github.com/jinzhu/gorm"
+
 	"hindsight/database"
 	"hindsight/user"
 	"hindsight/topic"
 	"hindsight/auth"
+	"hindsight/config"
 )
 
 var authMiddleware = auth.GetMiddleware()
@@ -66,6 +68,10 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	if _, err := config.Init(); err != nil {
+		panic(err)
+	}
+
 	db := setupDB()
 	defer db.Close()
 
