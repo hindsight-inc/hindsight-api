@@ -50,10 +50,14 @@ func UpdateSession(token string) error {
 	return session.Validate()
 }
 
-func UpdateMe() {
-	res, _ := session.Get("/me", facebook.Params{
+func UpdateMe() error {
+	var res facebook.Result
+	var err error
+	if res, err = session.Get("/me", facebook.Params{
 		"fields": "id,first_name,last_name,middle_name,name,name_format,picture,short_name",
-	})
+	}); err != nil {
+		return err
+	}
 	me = User{}
 
 	// Default permissions: https://developers.facebook.com/docs/facebook-login/permissions/#reference-default
@@ -62,6 +66,11 @@ func UpdateMe() {
 			me.FacebookID = i
 		}
 	}
+	if me.FacebookID <= 0 {
+		return errors.New("Invalid Facebook ID")
+	}
+
+	// The following fields are all optional
 	if s, ok := res["first_name"].(string); ok {
 		me.FirstName = s
 	}
@@ -89,6 +98,7 @@ func UpdateMe() {
 			}
 		}
 	}
+	return nil
 }
 
 /*
@@ -116,15 +126,11 @@ func Login(token string) {
 func Create(user User) error {
 	var u User
 	db := database.GetDB()
-	if err := db.Where("facebook_id = ?", user.FacebookID).First(&u).Error; err != nil {
-		return err
-	}
-	if u.ID == 0 {
-		if err := db.Create(&user).Error; err != nil {
-			return err
-		}
-	} else {
+	if notFound := db.Where("facebook_id = ?", user.FacebookID).First(&u).RecordNotFound(); !notFound {
 		return errors.New("Facebook user already exists")
+	}
+	if err := db.Create(&user).Error; err != nil {
+		return err
 	}
 	return nil
 }
@@ -134,21 +140,23 @@ func Test() {
 	db.AutoMigrate(&User{})
 	defer db.Close()
 
-	if err := Init(); err == nil {
-		if err := UpdateSession(cfg.Facebook_access_token); err == nil {
-			UpdateMe()
-			fmt.Println(me)
-			if err := Create(me); err == nil {
-				Create(me)
-			} else {
-				fmt.Println(err)
-			}
-		} else {
-			fmt.Println(err)
-		}
-	} else {
+	if err := Init(); err != nil {
 		fmt.Println(err)
+		return
 	}
+	if err := UpdateSession(cfg.Facebook_access_token); err != nil {
+		fmt.Println(err)
+		return
+	}
+	if err := UpdateMe(); err != nil {
+		fmt.Println(err)
+		return
+	}
+	if err := Create(me); err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(me)
 }
 
 func main() {
