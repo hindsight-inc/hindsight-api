@@ -3,7 +3,7 @@ package main
 import (
     "fmt"
 	"strconv"
-    fb "github.com/huandu/facebook"
+    "github.com/huandu/facebook"
 	"github.com/jinzhu/gorm"
 	"hindsight/config"
 )
@@ -21,8 +21,8 @@ type User struct {
 }
 
 var cfg *config.Configuration
-var app *fb.App
-var session *fb.Session
+var app *facebook.App
+var session *facebook.Session
 var me User
 
 func Init() {
@@ -31,10 +31,10 @@ func Init() {
 	}
 	cfg = config.Shared()
 
-	//fb.Debug = fb.DEBUG_ALL
-	//fb.Version = "v3.0"
+	//facebook.Debug = facebook.DEBUG_ALL
+	//facebook.Version = "v3.0"
 
-	app = fb.New(cfg.Facebook_app_id, cfg.Facebook_app_secret)
+	app = facebook.New(cfg.Facebook_app_id, cfg.Facebook_app_secret)
     //fmt.Println(app)
 }
 
@@ -46,7 +46,7 @@ func UpdateSession() {
 }
 
 func UpdateMe() {
-	res, _ := session.Get("/me", fb.Params{
+	res, _ := session.Get("/me", facebook.Params{
 		"fields": "id,first_name,last_name,middle_name,name,name_format,picture,short_name",
 	})
 	me = User{}
