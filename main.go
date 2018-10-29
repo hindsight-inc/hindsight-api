@@ -11,7 +11,7 @@ import (
 	"hindsight/topic"
 	"hindsight/auth"
 	"hindsight/config"
-	//"hindsight/facebook"
+	"hindsight/facebook"
 )
 
 var authMiddleware = auth.GetMiddleware()
@@ -23,9 +23,14 @@ func setupDB() *gorm.DB {
 	return db
 }
 
+func internalTest(c *gin.Context) {
+	facebook.Test()
+}
+
 func setupRouter() *gin.Engine {
 	//	route
 	r := gin.Default()
+	r.GET("/test", internalTest)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -75,8 +80,7 @@ func main() {
 
 	db := setupDB()
 	defer db.Close()
-	
-	//facebook.Test()
+
 	r := setupRouter()
 	r.Run(":8080")
 }

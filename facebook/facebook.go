@@ -1,4 +1,4 @@
-package main
+package facebook
 
 import (
     "fmt"
@@ -157,8 +157,4 @@ func Test() {
 		return
 	}
 	fmt.Println(me)
-}
-
-func main() {
-	Test()
 }
