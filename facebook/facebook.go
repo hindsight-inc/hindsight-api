@@ -35,7 +35,7 @@ func Init() {
 	//fb.Version = "v3.0"
 
 	app = fb.New(cfg.Facebook_app_id, cfg.Facebook_app_secret)
-    fmt.Println(app)
+    //fmt.Println(app)
 }
 
 func UpdateSession() {
@@ -79,12 +79,7 @@ func UpdateMe() {
 	// Picture
 	if pic, ok := res["picture"].(map[string] interface {}); ok {
 		if data, ok := pic["data"].(map[string] interface {}); ok {
-			/*
-			fmt.Println(data["width"])
-			fmt.Println(data["height"])
-			fmt.Println(data["url"])
-			fmt.Println(data["is_silhouette"])
-			*/
+			// Available fields: width, height, url, is_silhouette
 			if s, ok := data["url"].(string); ok {
 				me.AvatarURL = s
 			}
@@ -98,12 +93,4 @@ func main() {
 	UpdateSession()
 	UpdateMe()
 	fmt.Println(me)
-
-	/*
-    res, _ := fb.Get("/538744468", fb.Params{
-        "fields": "first_name",
-        "access_token": "a-valid-access-token",
-    })
-    fmt.Println("Here is my Facebook first name:", res["first_name"])
-	*/
 }
