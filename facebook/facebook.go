@@ -91,6 +91,28 @@ func UpdateMe() {
 	}
 }
 
+/*
+func IsCreated(user User) (bool, error) {
+	var u User
+	db := database.GetDB()
+	if err := db.Where("facebook_id = ?", user.FacebookID).First(&u).Error; err != nil {
+		return nil, err
+	}
+	return u.id == 0
+}
+
+func Login(token string) {
+	UpdateSession(token)
+	UpdateMe()
+	if !me.IsRegistered() {
+		Create(me)
+		GetUserToken(me)
+	} else {
+		GetUserToken(me)
+	}
+}
+*/
+
 func Create(user User) error {
 	var u User
 	db := database.GetDB()
