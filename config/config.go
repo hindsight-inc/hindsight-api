@@ -8,6 +8,7 @@ import (
 type Configuration struct {
 	Facebook_app_id	string
 	Facebook_app_secret string
+	Facebook_access_token string
 }
 
 var Config *Configuration
@@ -17,6 +18,7 @@ func loadViper() error {
 	//viper.SetDefault("fb_app_secret", "FACEBOOK_SECRET")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("./config/")
+	viper.AddConfigPath("../config/")
 	viper.SetConfigType("yaml")
 
 	//	load normal config
@@ -41,8 +43,11 @@ func Init() (*Configuration, error) {
 		return nil, err
 	}
 	Config = &Configuration{
+		// config.yaml
 		Facebook_app_id: viper.GetString("fb_app_id"),
+		// secret.yaml
 		Facebook_app_secret: viper.GetString("fb_app_secret"),
+		Facebook_access_token: viper.GetString("fb_access_token"),
 	}
 	return Config, nil
 }
