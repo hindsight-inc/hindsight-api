@@ -136,14 +136,12 @@ func Create(user User) error {
 }
 
 func Test() {
-	db := database.Init()
-	db.AutoMigrate(&User{})
-	defer db.Close()
-
+	/*
 	if err := Init(); err != nil {
 		fmt.Println(err)
 		return
 	}
+	*/
 	if err := UpdateSession(cfg.Facebook_access_token); err != nil {
 		fmt.Println(err)
 		return

@@ -78,6 +78,10 @@ func main() {
 		panic(err)
 	}
 
+	if err := facebook.Init(); err != nil {
+		panic(err)
+	}
+
 	db := setupDB()
 	defer db.Close()
 
