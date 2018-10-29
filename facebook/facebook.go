@@ -126,7 +126,7 @@ func Login(token string) {
 func Create(user User) error {
 	var u User
 	db := database.GetDB()
-	if notFound := db.Where("facebook_id = ?", user.FacebookID).First(&u).RecordNotFound(); !notFound {
+	if notFound := db.Where(User{FacebookID: user.FacebookID}).First(&u).RecordNotFound(); !notFound {
 		return errors.New("Facebook user already exists")
 	}
 	if err := db.Create(&user).Error; err != nil {
