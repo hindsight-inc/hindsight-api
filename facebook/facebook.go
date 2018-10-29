@@ -3,9 +3,11 @@ package main
 import (
     "fmt"
 	"strconv"
+	"errors"
     "github.com/huandu/facebook"
 	"github.com/jinzhu/gorm"
 	"hindsight/config"
+	"hindsight/database"
 )
 
 type User struct {
@@ -18,6 +20,10 @@ type User struct {
 	MiddleName string `json:"middle_name"`
 	NameFormat string `json:"name_format"`
 	AvatarURL string `json:"avatar_url"`
+}
+
+func (User) TableName() string {
+    return "facebook_user"
 }
 
 var cfg *config.Configuration
@@ -85,11 +91,44 @@ func UpdateMe() {
 	}
 }
 
-func main() {
+func Create(user User) error {
+	var u User
+	db := database.GetDB()
+	if err := db.Where("facebook_id = ?", user.FacebookID).First(&u).Error; err != nil {
+		return err
+	}
+	if u.ID == 0 {
+		if err := db.Create(&user).Error; err != nil {
+			return err
+		}
+	} else {
+		return errors.New("Facebook user already exists")
+	}
+	return nil
+}
+
+func Test() {
+	db := database.Init()
+	db.AutoMigrate(&User{})
+	defer db.Close()
+
 	if err := Init(); err == nil {
 		if err := UpdateSession(cfg.Facebook_access_token); err == nil {
 			UpdateMe()
 			fmt.Println(me)
+			if err := Create(me); err == nil {
+				Create(me)
+			} else {
+				fmt.Println(err)
+			}
+		} else {
+			fmt.Println(err)
 		}
+	} else {
+		fmt.Println(err)
 	}
+}
+
+func main() {
+	Test()
 }

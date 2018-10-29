@@ -11,6 +11,7 @@ import (
 	"hindsight/topic"
 	"hindsight/auth"
 	"hindsight/config"
+	"hindsight/facebook"
 )
 
 var authMiddleware = auth.GetMiddleware()
@@ -74,7 +75,7 @@ func main() {
 
 	db := setupDB()
 	defer db.Close()
-
+	facebook.Test()
 	r := setupRouter()
 	r.Run(":8080")
 }
