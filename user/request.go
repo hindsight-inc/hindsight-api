@@ -22,12 +22,13 @@ func UserRegister(c *gin.Context) {
 
 	db := database.GetDB()
 	db.Where(User{Username: user.Username}).First(&user)
-	if user.ID == 0 {
-		db.Create(&user)
-		c.JSON(http.StatusOK, user.Response())
-	} else {
+	if notFound := db.Where(User{Username: user.Username}).First(&user).RecordNotFound(); !notFound {
 		c.JSON(error.Bad(error.DomainUserRegister, error.ReasonDuplicatedEntry, "User already exists"))
+		return
 	}
+
+	db.Create(&user)
+	c.JSON(http.StatusOK, user.Response())
 }
 
 func Authenticate(c *gin.Context) (int, gin.H, *User) {
