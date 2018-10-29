@@ -25,9 +25,9 @@ var app *facebook.App
 var session *facebook.Session
 var me User
 
-func Init() {
+func Init() error {
 	if _, err := config.Init(); err != nil {
-		panic(err)
+		return err
 	}
 	cfg = config.Shared()
 
@@ -36,13 +36,12 @@ func Init() {
 
 	app = facebook.New(cfg.Facebook_app_id, cfg.Facebook_app_secret)
     //fmt.Println(app)
+	return nil
 }
 
-func UpdateSession() {
-	session = app.Session(cfg.Facebook_access_token)
-	if err := session.Validate(); err != nil {
-		panic(err)
-	}
+func UpdateSession(token string) error {
+	session = app.Session(token)
+	return session.Validate()
 }
 
 func UpdateMe() {
@@ -76,10 +75,9 @@ func UpdateMe() {
 		me.NameFormat = s
 	}
 
-	// Picture
+	// Picture available fields: width, height, url, is_silhouette
 	if pic, ok := res["picture"].(map[string] interface {}); ok {
 		if data, ok := pic["data"].(map[string] interface {}); ok {
-			// Available fields: width, height, url, is_silhouette
 			if s, ok := data["url"].(string); ok {
 				me.AvatarURL = s
 			}
@@ -88,9 +86,10 @@ func UpdateMe() {
 }
 
 func main() {
-
-	Init()
-	UpdateSession()
-	UpdateMe()
-	fmt.Println(me)
+	if err := Init(); err == nil {
+		if err := UpdateSession(cfg.Facebook_access_token); err == nil {
+			UpdateMe()
+			fmt.Println(me)
+		}
+	}
 }
