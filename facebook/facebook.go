@@ -26,12 +26,26 @@ func (User) TableName() string {
     return "facebook_user"
 }
 
+// request
+
+type ConnectModel struct {
+	AccessToken string `json:"access_token"`
+}
+
+// local
+
+var db *gorm.DB
 var cfg *config.Configuration
 var app *facebook.App
 var session *facebook.Session
 var me User
 
+/** 
+ Initialize facebook app. 
+ Requires database initialization.
+ */
 func Init() error {
+	db = database.GetDB()
 	if _, err := config.Init(); err != nil {
 		return err
 	}
@@ -125,7 +139,6 @@ func Login(token string) {
 
 func Create(user User) error {
 	var u User
-	db := database.GetDB()
 	if notFound := db.Where(User{FacebookID: user.FacebookID}).First(&u).RecordNotFound(); !notFound {
 		return errors.New("Facebook user already exists")
 	}

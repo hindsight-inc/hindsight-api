@@ -38,8 +38,8 @@ func setupRouter() *gin.Engine {
 	})
 
 	//	public endpoint
-	//	TODO: FB user study
 	r.POST("/user/register", user.UserRegister)
+	r.POST("/user/facebook/connect", user.FacebookConnect)
 
 	//	auth
 	r.POST("/user/login", authMiddleware.LoginHandler)
@@ -78,11 +78,11 @@ func main() {
 		panic(err)
 	}
 
+	db := setupDB()
 	if err := facebook.Init(); err != nil {
 		panic(err)
 	}
 
-	db := setupDB()
 	defer db.Close()
 
 	r := setupRouter()

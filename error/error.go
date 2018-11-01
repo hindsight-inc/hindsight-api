@@ -16,6 +16,7 @@ const DomainAuthJWT = "auth.jwt"
 const DomainUserRegister = "user.register"
 const DomainUserLogin = "user.login"
 const DomainUserInfo = "user.info"
+const DomainFacebookConnect = "facebook.connect"
 const DomainTopicCreate = "topic.create"
 
 const ReasonUnauthorized = "Unauthorized"
