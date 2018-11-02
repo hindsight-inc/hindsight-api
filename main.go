@@ -24,7 +24,7 @@ func setupDB() *gorm.DB {
 }
 
 func internalTest(c *gin.Context) {
-	facebook.Test()
+	//facebook.Connect("access_token")
 }
 
 func setupRouter() *gin.Engine {

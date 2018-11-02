@@ -1,7 +1,6 @@
 package facebook
 
 import (
-    //"fmt"
 	"strconv"
 	"errors"
     "github.com/huandu/facebook"
@@ -55,16 +54,15 @@ func Init() error {
 	//facebook.Version = "v3.0"
 
 	app = facebook.New(cfg.Facebook_app_id, cfg.Facebook_app_secret)
-    //fmt.Println(app)
 	return nil
 }
 
-func UpdateSession(token string) error {
+func updateSession(token string) error {
 	session = app.Session(token)
 	return session.Validate()
 }
 
-func UpdateMe() error {
+func updateMe() error {
 	var res facebook.Result
 	var err error
 	if res, err = session.Get("/me", facebook.Params{
@@ -115,29 +113,11 @@ func UpdateMe() error {
 	return nil
 }
 
-/*
-func IsCreated(user User) (bool, error) {
-	var u User
-	db := database.GetDB()
-	if err := db.Where("facebook_id = ?", user.FacebookID).First(&u).Error; err != nil {
-		return nil, err
-	}
-	return u.id == 0
-}
-
-func Login(token string) {
-	UpdateSession(token)
-	UpdateMe()
-	if !me.IsRegistered() {
-		Create(me)
-		GetUserToken(me)
-	} else {
-		GetUserToken(me)
-	}
-}
-*/
-
-func Create(user User) error {
+/**
+ Create user if it's not existing.
+ This function is not used in the app.
+ */
+func create(user User) error {
 	var u User
 	if notFound := db.Where(User{FacebookID: user.FacebookID}).First(&u).RecordNotFound(); !notFound {
 		return errors.New("Facebook user already exists")
@@ -155,10 +135,10 @@ func Create(user User) error {
  */
 func Connect(token string) (User, error) {
 	var u User
-	if err := UpdateSession(token); err != nil {
+	if err := updateSession(token); err != nil {
 		return u, err
 	}
-	if err := UpdateMe(); err != nil {
+	if err := updateMe(); err != nil {
 		return u, err
 	}
 	if me.FacebookID <= 0 {
@@ -173,26 +153,4 @@ func Connect(token string) (User, error) {
 	}
 	// new user
 	return me, nil
-}
-
-func Test() {
-	/*
-	if err := Init(); err != nil {
-		fmt.Println(err)
-		return
-	}
-	if err := UpdateSession(cfg.Facebook_access_token); err != nil {
-		fmt.Println(err)
-		return
-	}
-	if err := UpdateMe(); err != nil {
-		fmt.Println(err)
-		return
-	}
-	if err := Create(me); err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(me)
-	*/
 }

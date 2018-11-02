@@ -13,15 +13,6 @@ import (
 // POST {{host}}/user/facebook/connect
 // access_token: FB_TOKEN
 func FacebookConnect(c *gin.Context) {
-	/*
-	token := c.DefaultQuery("access_token", "")
-	if token == nil {
-		c.JSON(error.Bad(error.DomainUserRegister, error.ReasonDuplicatedEntry, "User already exists"))
-		return
-	}
-	*/
-
-	// We could also use object instead
 	var request facebook.ConnectRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(error.Bad(error.DomainFacebookConnect, error.ReasonInvalidJSON, err.Error()))
