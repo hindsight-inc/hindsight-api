@@ -21,7 +21,6 @@ func UserRegister(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	db.Where(User{Username: user.Username}).First(&user)
 	if notFound := db.Where(User{Username: user.Username}).First(&user).RecordNotFound(); !notFound {
 		c.JSON(error.Bad(error.DomainUserRegister, error.ReasonDuplicatedEntry, "User already exists"))
 		return

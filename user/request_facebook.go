@@ -1,7 +1,7 @@
 package user
 
 import (
-	"log"
+	//"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	//"github.com/appleboy/gin-jwt"
@@ -22,18 +22,23 @@ func FacebookConnect(c *gin.Context) {
 	*/
 
 	// We could also use object instead
-	var model facebook.ConnectModel
-	if err := c.ShouldBindJSON(&model); err != nil {
+	var request facebook.ConnectRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(error.Bad(error.DomainFacebookConnect, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
 
-	if model.AccessToken == "" {
+	if request.AccessToken == "" {
 		c.JSON(error.Bad(error.DomainFacebookConnect, error.ReasonInvalidJSON, "Invalid access_token"))
 		return
 	}
 
-	log.Println(model)
+	//log.Println(request)
+	if fbUser, err := facebook.Connect(request.AccessToken); err == nil {
+		c.JSON(http.StatusOK, fbUser)
+	} else {
+		c.JSON(error.Bad(error.DomainFacebookConnect, error.ReasonInvalidJSON, err.Error()))
+	}
 
 	/*
 	db := database.GetDB()
@@ -46,5 +51,4 @@ func FacebookConnect(c *gin.Context) {
 	db.Create(&user)
 	*/
 	//c.JSON(http.StatusOK, model.Response())
-	c.JSON(http.StatusOK, nil)
 }

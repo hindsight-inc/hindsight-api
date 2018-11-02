@@ -1,7 +1,7 @@
 package facebook
 
 import (
-    "fmt"
+    //"fmt"
 	"strconv"
 	"errors"
     "github.com/huandu/facebook"
@@ -28,7 +28,7 @@ func (User) TableName() string {
 
 // request
 
-type ConnectModel struct {
+type ConnectRequest struct {
 	AccessToken string `json:"access_token"`
 }
 
@@ -148,13 +148,39 @@ func Create(user User) error {
 	return nil
 }
 
+/**
+ Get facebook.User based on Facebook ID, which is from Facebook access token.
+ Create and return the user if it is not created yet.
+ This function does *NOT* tell whether a user is new or existing.
+ */
+func Connect(token string) (User, error) {
+	var u User
+	if err := UpdateSession(token); err != nil {
+		return u, err
+	}
+	if err := UpdateMe(); err != nil {
+		return u, err
+	}
+	if me.FacebookID <= 0 {
+		return u, errors.New("Invalid Facebook ID")
+	}
+	if notFound := db.Where(User{FacebookID: me.FacebookID}).First(&u).RecordNotFound(); !notFound {
+		// existing user
+		return u, nil
+	}
+	if err := db.Create(&me).Error; err != nil {
+		return u, err
+	}
+	// new user
+	return me, nil
+}
+
 func Test() {
 	/*
 	if err := Init(); err != nil {
 		fmt.Println(err)
 		return
 	}
-	*/
 	if err := UpdateSession(cfg.Facebook_access_token); err != nil {
 		fmt.Println(err)
 		return
@@ -168,4 +194,5 @@ func Test() {
 		return
 	}
 	fmt.Println(me)
+	*/
 }
