@@ -115,7 +115,7 @@ func updateMe() error {
 
 /**
  Create user if it's not existing.
- This function is not used in the app.
+ This function is not used right now. Remove?
  */
 func create(user User) error {
 	var u User

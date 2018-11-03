@@ -20,6 +20,7 @@ func setupDB() *gorm.DB {
 	db := database.Init()
 	db.AutoMigrate(&user.User{})
 	db.AutoMigrate(&topic.Topic{})
+	db.AutoMigrate(&facebook.User{})
 	return db
 }
 

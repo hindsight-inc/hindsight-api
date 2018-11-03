@@ -5,12 +5,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
 	"hindsight/database"
+	"hindsight/facebook"
 )
 
 type User struct {
 	gorm.Model
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password"`
+	// facebook
+	FacebookUser	facebook.User
+	FacebookUserID	int64
 }
 
 //	Don't use old token after changing this, see: https://github.com/appleboy/gin-jwt/issues/170
