@@ -52,13 +52,10 @@ func Authenticate(c *gin.Context) (int, gin.H, *User) {
 }
 
 func Authorize(c *gin.Context, username string) bool {
+	//	Current behavior: user has access to everything as long as s/he's logged in
 	var user User
 	db := database.GetDB()
-	db.Where(User{Username: username}).First(&user)
-	if user.ID == 0 {
-		return false
-	}
-	return true
+	return !db.Where(User{Username: username}).First(&user).RecordNotFound()
 }
 
 func UserLogin(c *gin.Context) {
