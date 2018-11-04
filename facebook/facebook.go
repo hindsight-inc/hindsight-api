@@ -5,6 +5,7 @@ import (
 	"errors"
     "github.com/huandu/facebook"
 	"github.com/jinzhu/gorm"
+	"github.com/rs/xid"
 	"hindsight/config"
 	"hindsight/database"
 )
@@ -23,6 +24,11 @@ type User struct {
 
 func (User) TableName() string {
     return "facebook_user"
+}
+
+func (self *User) UniqueUsername() string {
+	guid := xid.New()
+	return "fb_" + strconv.FormatInt(self.FacebookID, 10) + "_" + guid.String()
 }
 
 // request

@@ -2,7 +2,6 @@ package user
 
 import (
 	"log"
-	"strconv"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	//"github.com/appleboy/gin-jwt"
@@ -39,24 +38,18 @@ func FacebookConnect(c *gin.Context) {
 	var user User
 	db := database.GetDB()
 
-	if notFound := db.Where(User{FacebookUserID: fbUser.FacebookID}).First(&user).RecordNotFound(); !notFound {
+	if notFound := db.Where(User{FacebookUserID: fbUser.ID}).First(&user).RecordNotFound(); !notFound {
 		// user already exists
-		c.JSON(http.StatusOK, user)
+		c.JSON(http.StatusOK, user.Response())
 		return
 	}
 
-	// create new user
-	//user = User{Username: "fb" + strconv.FormatInt(fbUser.FacebookID, 10), FacebookUserID: fbUser.id}
-	user = User{Username: "fb" + strconv.FormatInt(fbUser.FacebookID, 10)}
+	// create new user with a randomized unique username
+	user = User{Username: fbUser.UniqueUsername(), FacebookUserID: fbUser.ID}
 	if err := db.Create(&user).Error; err != nil {
 		c.JSON(herror.Bad(herror.DomainUserRegister, herror.ReasonDuplicatedEntry, err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
-
-	/*
-	db.Create(&user)
-	*/
-	//c.JSON(http.StatusOK, model.Response())
+	c.JSON(http.StatusOK, user.Response())
 }

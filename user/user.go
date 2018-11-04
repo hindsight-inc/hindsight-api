@@ -14,7 +14,7 @@ type User struct {
 	Password string `json:"password"`
 	// facebook
 	FacebookUser	facebook.User
-	FacebookUserID	int64
+	FacebookUserID	uint
 }
 
 //	Don't use old token after changing this, see: https://github.com/appleboy/gin-jwt/issues/170
