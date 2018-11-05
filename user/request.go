@@ -63,12 +63,6 @@ func UserLogin(c *gin.Context) {
 }
 */
 
-/*
-curl -v GET \
-  http://localhost:8080/user \
-  -H 'content-type: application/json' \
-  -H 'Authorization:Bearer xxx'
-*/
 func UserInfo(c *gin.Context) {
 	var user User
 	claim := jwt.ExtractClaims(c)[IdentityKey]

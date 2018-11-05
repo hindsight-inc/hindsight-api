@@ -200,6 +200,33 @@ func TestUserTokenPingSuccess(t *testing.T) {
 	assert.Contains(t, w.Body.String(), kTestUserUsername)
 }
 
+/*
+curl -v GET \
+  http://localhost:8080/user \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization:Bearer xxx'
+*/
+func TestUserDetailSuccess(t *testing.T) {
+	//	TODO: figure out why test would fail without `setupDB`
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/user", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	//	something like { "facebook_name": "Leo Superarts", "id": 2, "username": "fb_2332682216774407_bffr0g3mvbaob6nqs880" }
+	var u user.User
+	json.Unmarshal([]byte(w.Body.String()), &u)
+	assert.Equal(t, u.Username, kTestUserUsername)
+	assert.Contains(t, w.Body.String(), "N/A")	// <- TODO: this test shall break when we actually work on user detail API
+}
+
 func TestUserTokenPingFailureUnauthorized(t *testing.T) {
 	db := setupDB()
 	defer db.Close()

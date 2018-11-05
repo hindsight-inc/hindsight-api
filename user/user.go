@@ -31,14 +31,6 @@ func (self *User) DetailResponse() gin.H {
 		return gin.H{"id": self.ID, "username": self.Username, "facebook_name": "N/A"}
 	}
 	return gin.H{"id": self.ID, "username": self.Username, "facebook_name": self.FacebookUser.Name}
-	/*
-	var u User
-	tx := db.Begin()
-	tx.Where(self).First(&u)
-	tx.Model(&u).Related(&u.FacebookUser, "FacebookUser")
-	tx.Commit()
-	return gin.H{"id": u.ID, "username": u.Username, "facebook_name": u.FacebookUser.Name}
-	*/
 }
 
 /* Auth */
