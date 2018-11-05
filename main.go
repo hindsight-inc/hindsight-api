@@ -40,10 +40,11 @@ func setupRouter() *gin.Engine {
 
 	//	public endpoint
 	r.POST("/user/register", user.UserRegister)
-	r.POST("/user/facebook/connect", user.FacebookConnect)
+	//r.POST("/user/facebook/connect", user.FacebookConnect)
 
 	//	auth
 	r.POST("/user/login", authMiddleware.LoginHandler)
+	r.POST("/user/connect", authMiddleware.LoginHandler)
 	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
 		log.Printf("NoRoute claims: %#v\n", claims)

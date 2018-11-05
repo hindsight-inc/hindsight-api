@@ -4,6 +4,7 @@ import (
 	//"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/appleboy/gin-jwt"
 	"hindsight/database"
 	"hindsight/error"
@@ -32,7 +33,7 @@ func UserRegister(c *gin.Context) {
 
 func Authenticate(c *gin.Context) (int, gin.H, *User) {
 	var json User
-	if err := c.ShouldBindJSON(&json); err != nil {
+	if err := c.ShouldBindBodyWith(&json, binding.JSON); err != nil {
 		code, response := error.Bad(error.DomainUserLogin, error.ReasonInvalidJSON, err.Error())
 		return code, response, nil
 	}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/appleboy/gin-jwt"
 	"hindsight/user"
 	apiError "hindsight/error"
@@ -44,12 +45,23 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 		},
 		//	login
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			_, response, user := user.Authenticate(c)
+			// TODO: multiple Authenticator should be used here. For now, different auth methods are routed to different handlers, and multiple binding requests `ShouldBindBodyWith`
+			// Details: https://github.com/gin-gonic/gin - however it may not be possible with https://github.com/appleboy/gin-jwt
+
+			var response gin.H
+			var u *user.User
+			var rsq AuthRequest
+			if c.ShouldBindBodyWith(&rsq, binding.JSON); rsq.Method == "facebook" {
+				_, response, u = user.FacebookAuthenticate(c)
+			} else {
+				_, response, u = user.Authenticate(c)
+			}
+
 			json, _ := json.Marshal(response)
-			if user == nil {
+			if u == nil {
 				return nil, errors.New(string(json))
 			}
-			return user, nil
+			return u, nil
 		},
 		//	access control
 		Authorizator: func(data interface{}, c *gin.Context) bool {
@@ -86,4 +98,8 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 		log.Fatal("JWT Error:" + err.Error())
 	}
 	return middleware
+}
+
+type AuthRequest struct {
+	Method string `json:"method"`
 }
