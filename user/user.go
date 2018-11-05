@@ -1,6 +1,7 @@
 package user
 
 import (
+	//"log"
 	"github.com/jinzhu/gorm"
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
@@ -16,6 +17,31 @@ type User struct {
 	FacebookUser	facebook.User
 	FacebookUserID	uint
 }
+
+/* Response */
+
+func (self *User) Response() gin.H {
+	return gin.H{"id": self.ID, "username": self.Username}
+}
+
+func (self *User) DetailResponse() gin.H {
+	// TODO: this is just an example, it will be changed base on actual business logic.
+	db := database.GetDB()
+	if err := db.Model(self).Related(&self.FacebookUser, "FacebookUser").Error; err != nil {
+		return gin.H{"id": self.ID, "username": self.Username, "facebook_name": "N/A"}
+	}
+	return gin.H{"id": self.ID, "username": self.Username, "facebook_name": self.FacebookUser.Name}
+	/*
+	var u User
+	tx := db.Begin()
+	tx.Where(self).First(&u)
+	tx.Model(&u).Related(&u.FacebookUser, "FacebookUser")
+	tx.Commit()
+	return gin.H{"id": u.ID, "username": u.Username, "facebook_name": u.FacebookUser.Name}
+	*/
+}
+
+/* Auth */
 
 //	Don't use old token after changing this, see: https://github.com/appleboy/gin-jwt/issues/170
 const IdentityKey = "user.id"

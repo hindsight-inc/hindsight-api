@@ -10,10 +10,6 @@ import (
 	"hindsight/error"
 )
 
-func (self *User) Response() gin.H {
-	return gin.H{"id": self.ID, "username": self.Username}
-}
-
 func UserRegister(c *gin.Context) {
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -90,5 +86,5 @@ func UserInfo(c *gin.Context) {
 		c.JSON(error.Bad(error.DomainUserInfo, error.ReasonNonexistentEntry, "User not found"))
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user.DetailResponse())
 }
