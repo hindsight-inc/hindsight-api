@@ -59,10 +59,13 @@ func Authorize(c *gin.Context, username string) bool {
 	return !db.Where(User{Username: username}).First(&user).RecordNotFound()
 }
 
+//	Use this function if we are going to implement our own auth middleware
+/*
 func UserLogin(c *gin.Context) {
 	code, response, _ := Authenticate(c)
 	c.JSON(code, response)
 }
+*/
 
 /*
 curl -v GET \

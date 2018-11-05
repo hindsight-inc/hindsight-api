@@ -40,7 +40,6 @@ func setupRouter() *gin.Engine {
 
 	//	public endpoint
 	r.POST("/user/register", user.UserRegister)
-	//r.POST("/user/facebook/connect", user.FacebookConnect)
 
 	//	auth
 	r.POST("/user/login", authMiddleware.LoginHandler)
@@ -67,10 +66,6 @@ func setupRouter() *gin.Engine {
 		authRoot.GET("/topics/:id", topic.Detail)
 		authRoot.POST("/topics", topic.Create)
 	}
-
-	//r.POST("/user/login", user.UserLogin)
-	//r.GET("/users", user.DummyUsersList)
-	//r.GET("/users/:uid", user.DummyUsersInfo)
 
 	return r
 }
