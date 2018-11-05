@@ -1,5 +1,11 @@
 title: Hindsight Configuration
 owner: hindsight.inc
 
+mysql:
+mysql_database: golang
+
+jwt:
+jwt_realm: hindsight-inc
+
 facebook:
 fb_app_id: 394172167787443

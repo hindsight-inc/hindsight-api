@@ -6,6 +6,12 @@ import (
 )
 
 type Configuration struct {
+	MySQL_database string
+	MySQL_password string
+	
+	JWT_Realm string
+	JWT_Key string
+
 	Facebook_app_id	string
 	Facebook_app_secret string
 	Facebook_access_token string
@@ -43,9 +49,13 @@ func Init() (*Configuration, error) {
 		return nil, err
 	}
 	Config = &Configuration{
-		// config.yaml
+		MySQL_database: viper.GetString("mysql_database"),
+		MySQL_password: viper.GetString("mysql_password"),
+
+		JWT_Realm: viper.GetString("jwt_realm"),
+		JWT_Key: viper.GetString("jwt_key"),
+
 		Facebook_app_id: viper.GetString("fb_app_id"),
-		// secret.yaml
 		Facebook_app_secret: viper.GetString("fb_app_secret"),
 		Facebook_access_token: viper.GetString("fb_access_token"),
 	}

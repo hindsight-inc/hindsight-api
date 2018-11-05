@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/appleboy/gin-jwt"
 	"hindsight/user"
+	"hindsight/config"
 	apiError "hindsight/error"
 )
 
@@ -18,10 +19,12 @@ type Token struct {
 }
 
 func GetMiddleware() *jwt.GinJWTMiddleware {
+	cfg := config.Shared()
 	//https://godoc.org/gopkg.in/appleboy/gin-jwt.v2
+	log.Println(cfg)
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "hindsight-inc",
-		Key:         []byte("secret key is required"),
+		Realm:       cfg.JWT_Realm,
+		Key:         []byte(cfg.JWT_Key),
 		Timeout:     time.Hour * 99999,
 		MaxRefresh:  time.Hour * 99999,
 		IdentityKey: user.IdentityKey,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"hindsight/config"
 )
 
 type Database struct {
@@ -14,8 +15,9 @@ var DB *gorm.DB
 
 // Opening a database and save the reference to `Database` struct.
 func Init() *gorm.DB {
+	cfg := config.Shared()
 	//db, err := gorm.Open("sqlite3", "./../gorm.db")
-	db, err := gorm.Open("mysql", "golang:password@/golang?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open("mysql", cfg.MySQL_database + ":" + cfg.MySQL_password + "@/golang?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}

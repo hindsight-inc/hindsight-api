@@ -48,6 +48,15 @@ func TestPingRoute(t *testing.T) {
 
 var UserID uint
 
+func TestSetup(t *testing.T) {
+	// no checking here as they just `panic`
+	setupConfig()
+	setupFacebook()
+
+	middleware := setupAuth()
+	assert.NotEmpty(t, middleware)
+}
+
 /*
 curl -v POST \
   http://localhost:8080/user/register \

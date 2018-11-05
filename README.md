@@ -33,6 +33,10 @@ RESTful server for the Hindsight project.
 - `GRANT ALL PRIVILEGES ON * . * TO 'golang'@'localhost';`
 - `create database golang;`
 
+## Configuration
+
+A `.gitignored` `config/secret.yaml` must be created. Check `config/config_test.go`: `TestSecret()` for fields needed.
+
 ## Tools
 
 - `run.sh`: build, test, and run
@@ -51,3 +55,8 @@ Check `main_test.go` for sequential integration tests
 ## Postman
 
 https://hindsight-inc.postman.co/workspaces?type=team
+
+# Links
+
+- Facebook API console: https://developers.facebook.com/tools/explorer/394172167787443
+- Extend facebook token: https://developers.facebook.com/tools/debug/accesstoken

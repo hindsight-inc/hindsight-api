@@ -14,7 +14,12 @@ import (
 	"hindsight/facebook"
 )
 
-var authMiddleware = auth.GetMiddleware()
+var authMiddleware *jwt.GinJWTMiddleware
+
+func setupAuth() *jwt.GinJWTMiddleware {
+	authMiddleware = auth.GetMiddleware()
+	return authMiddleware
+}
 
 func setupDB() *gorm.DB {
 	db := database.Init()
@@ -70,16 +75,24 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func main() {
+func setupConfig() {
 	if _, err := config.Init(); err != nil {
 		panic(err)
 	}
+}
 
-	db := setupDB()
+func setupFacebook() {
 	if err := facebook.Init(); err != nil {
 		panic(err)
 	}
+}
 
+func main() {
+	setupConfig()
+	setupFacebook()
+	setupAuth()
+
+	db := setupDB()
 	defer db.Close()
 
 	r := setupRouter()
