@@ -18,6 +18,7 @@ func TestConfig(t *testing.T) {
 	assert.NotEmpty(t, c.MySQL_database)
 	assert.NotEmpty(t, c.JWT_Realm)
 	assert.NotEmpty(t, c.Facebook_app_id)
+	assert.NotEmpty(t, c.Facebook_disable_test)
 }
 
 func TestSecret(t *testing.T) {

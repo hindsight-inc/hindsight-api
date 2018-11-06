@@ -9,3 +9,4 @@ jwt_realm: hindsight-inc
 
 facebook:
 fb_app_id: 394172167787443
+fb_disable_test: true

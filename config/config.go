@@ -12,6 +12,7 @@ type Configuration struct {
 	JWT_Realm string
 	JWT_Key string
 
+	Facebook_disable_test bool
 	Facebook_app_id	string
 	Facebook_app_secret string
 	Facebook_access_token string
@@ -55,6 +56,7 @@ func Init() (*Configuration, error) {
 		JWT_Realm: viper.GetString("jwt_realm"),
 		JWT_Key: viper.GetString("jwt_key"),
 
+		Facebook_disable_test: viper.GetBool("fb_disable_test"),
 		Facebook_app_id: viper.GetString("fb_app_id"),
 		Facebook_app_secret: viper.GetString("fb_app_secret"),
 		Facebook_access_token: viper.GetString("fb_access_token"),

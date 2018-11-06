@@ -395,6 +395,9 @@ func TestTopicDetail(t *testing.T) {
 //	{{host}}/user/connect { "method": "facebook", "access_token": "xxx" }
 func TestUserConnectFacebookSuccess(t *testing.T) {
 	cfg := config.Shared()
+	if cfg.Facebook_disable_test {
+		return
+	}
 
 	db := setupDB()
 	defer db.Close()
@@ -417,6 +420,11 @@ func TestUserConnectFacebookSuccess(t *testing.T) {
 }
 
 func TestUserConnectFacebookFailureBadToken(t *testing.T) {
+	cfg := config.Shared()
+	if cfg.Facebook_disable_test {
+		return
+	}
+
 	db := setupDB()
 	defer db.Close()
 	router := setupRouter()
@@ -437,6 +445,11 @@ func TestUserConnectFacebookFailureBadToken(t *testing.T) {
 }
 
 func TestUserConnectFailureBadMethod(t *testing.T) {
+	cfg := config.Shared()
+	if cfg.Facebook_disable_test {
+		return
+	}
+
 	db := setupDB()
 	defer db.Close()
 	router := setupRouter()
@@ -457,6 +470,11 @@ func TestUserConnectFailureBadMethod(t *testing.T) {
 }
 
 func TestFacebookUserDetailSuccess(t *testing.T) {
+	cfg := config.Shared()
+	if cfg.Facebook_disable_test {
+		return
+	}
+
 	db := setupDB()
 	defer db.Close()
 	router := setupRouter()

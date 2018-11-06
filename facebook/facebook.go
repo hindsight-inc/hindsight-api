@@ -51,9 +51,11 @@ var me User
  */
 func Init() error {
 	db = database.GetDB()
+	/*
 	if _, err := config.Init(); err != nil {
 		return err
 	}
+	*/
 	cfg = config.Shared()
 
 	//facebook.Debug = facebook.DEBUG_ALL
