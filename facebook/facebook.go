@@ -72,7 +72,8 @@ func updateMe() error {
 	var res facebook.Result
 	var err error
 	if res, err = session.Get("/me", facebook.Params{
-		"fields": "id,first_name,last_name,middle_name,name,name_format,picture,short_name",
+		//"fields": "id,first_name,last_name,middle_name,name,name_format,picture,short_name",
+		"fields": "id,first_name,last_name,middle_name,name,name_format,picture",
 	}); err != nil {
 		return err
 	}

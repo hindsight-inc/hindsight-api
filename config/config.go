@@ -8,7 +8,7 @@ import (
 type Configuration struct {
 	MySQL_database string
 	MySQL_password string
-	
+
 	JWT_Realm string
 	JWT_Key string
 

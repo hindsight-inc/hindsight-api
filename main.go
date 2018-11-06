@@ -89,11 +89,12 @@ func setupFacebook() {
 
 func main() {
 	setupConfig()
-	setupFacebook()
-	setupAuth()
 
 	db := setupDB()
 	defer db.Close()
+
+	setupFacebook()
+	setupAuth()
 
 	r := setupRouter()
 	r.Run(":8080")

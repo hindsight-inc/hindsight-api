@@ -51,6 +51,10 @@ var UserID uint
 func TestSetup(t *testing.T) {
 	// no checking here as they just `panic`
 	setupConfig()
+
+	db := setupDB()
+	defer db.Close()
+
 	setupFacebook()
 
 	middleware := setupAuth()
