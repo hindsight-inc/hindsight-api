@@ -17,6 +17,7 @@ import (
 	"hindsight/user"
 	"hindsight/topic"
 	"hindsight/error"
+	"hindsight/config"
 )
 
 const kTestUserUsername = "test001"
@@ -195,7 +196,6 @@ curl -v GET \
   -H 'Authorization:Bearer xxx'
 */
 func TestUserTokenPingSuccess(t *testing.T) {
-	//	TODO: figure out why test would fail without `setupDB`
 	db := setupDB()
 	defer db.Close()
 	router := setupRouter()
@@ -220,7 +220,6 @@ curl -v GET \
   -H 'Authorization:Bearer xxx'
 */
 func TestUserDetailSuccess(t *testing.T) {
-	//	TODO: figure out why test would fail without `setupDB`
 	db := setupDB()
 	defer db.Close()
 	router := setupRouter()
@@ -233,7 +232,7 @@ func TestUserDetailSuccess(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	//	something like { "facebook_name": "Leo Superarts", "id": 2, "username": "fb_2332682216774407_bffr0g3mvbaob6nqs880" }
+	//	something like { "facebook_name": "N/A", "id": 2, "username": "test001" }
 	var u user.User
 	json.Unmarshal([]byte(w.Body.String()), &u)
 	assert.Equal(t, u.Username, kTestUserUsername)
@@ -391,4 +390,87 @@ func TestTopicDetail(t *testing.T) {
 	assert.Equal(t, t0.ID, TopicID)
 	assert.Equal(t, t0.Title, kTestTopicTitle)
 	assert.Equal(t, t0.Content, kTestTopicContent)
+}
+
+//	{{host}}/user/connect { "method": "facebook", "access_token": "xxx" }
+func TestUserConnectFacebookSuccess(t *testing.T) {
+	cfg := config.Shared()
+
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	r := auth.ConnectRequest{Method: "facebook", AccessToken: cfg.Facebook_access_token}
+	b, _ := json.Marshal(r)
+
+	req, _ := http.NewRequest("POST", "/user/connect", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var token auth.Token
+	json.Unmarshal([]byte(w.Body.String()), &token)
+	assert.NotEmpty(t, token.Expire)	// TODO: equal to or later than `now`
+	assert.NotEmpty(t, token.Token)		// TODO: validate it's a correct JWT token
+	Token = token.Token
+}
+
+func TestUserConnectFacebookFailureBadToken(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	r := auth.ConnectRequest{Method: "facebook", AccessToken: kSomething}
+	b, _ := json.Marshal(r)
+
+	req, _ := http.NewRequest("POST", "/user/connect", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
+
+func TestUserConnectFailureBadMethod(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	r := auth.ConnectRequest{Method: kSomething}
+	b, _ := json.Marshal(r)
+
+	req, _ := http.NewRequest("POST", "/user/connect", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, error.DomainAuthJWT, e.Domain)
+	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+}
+
+func TestFacebookUserDetailSuccess(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("GET", "/user", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	//	something like { "facebook_name": "Leo Superarts", "id": 2, "username": "fb_2332682216774407_bffr0g3mvbaob6nqs880" }
+	var u user.User
+	json.Unmarshal([]byte(w.Body.String()), &u)
+	assert.Contains(t, w.Body.String(), "fb_")	// <- TODO: create a model
 }

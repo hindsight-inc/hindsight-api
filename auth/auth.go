@@ -53,7 +53,7 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 
 			var response gin.H
 			var u *user.User
-			var rsq AuthRequest
+			var rsq ConnectRequest
 			if c.ShouldBindBodyWith(&rsq, binding.JSON); rsq.Method == "facebook" {
 				_, response, u = user.FacebookAuthenticate(c)
 			} else {
@@ -103,6 +103,7 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 	return middleware
 }
 
-type AuthRequest struct {
+type ConnectRequest struct {
 	Method string `json:"method"`
+	AccessToken string `json:"access_token"`
 }
