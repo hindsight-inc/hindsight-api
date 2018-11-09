@@ -7,9 +7,9 @@ import (
 )
 
 type APIError struct {
-	Domain string `json:"domain"`
-	Reason string `json:"reason"`
-	Message string `json:"message"`
+	Domain string
+	Reason string
+	Message string
 }
 
 const DomainAuthJWT = "auth.jwt"

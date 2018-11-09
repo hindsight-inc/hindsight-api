@@ -12,7 +12,7 @@ func TestFacebookInit(t *testing.T) {
 		log.Println("Facebook test disabled due to configuration")
 		return
 	} else {
-		assert.NotEmpty(t, err)
+		assert.Empty(t, err)
 	}
 
 	err := Init()

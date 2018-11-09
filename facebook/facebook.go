@@ -12,14 +12,14 @@ import (
 
 type User struct {
 	gorm.Model
-	FacebookID int64 `json:"facebook_id"`
-	Name string `json:"name"`
-	ShortName string `json:"short_name"`
-	FirstName string `json:"first_name"`
-	LastName string `json:"last_name"`
-	MiddleName string `json:"middle_name"`
-	NameFormat string `json:"name_format"`
-	AvatarURL string `json:"avatar_url"`
+	FacebookID int64
+	Name string
+	ShortName string
+	FirstName string
+	LastName string
+	MiddleName string
+	NameFormat string
+	AvatarURL string
 }
 
 func (User) TableName() string {
