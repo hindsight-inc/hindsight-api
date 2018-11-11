@@ -1,6 +1,7 @@
 package topic
 
 import (
+	"time"
 	"github.com/jinzhu/gorm"
 	"hindsight/user"
 )
@@ -11,9 +12,10 @@ const kPageSize = "10"
 
 type Topic struct {
 	gorm.Model
-	Title	string
+	Title	string `binding:"required"`
 	Content	string
-	// Deadline Date
+	DeadlineStart	time.Time
+	DeadlineEnd		time.Time `binding:"required"`
 	Author		user.User
 	AuthorID	uint
 	// PermissionView [User]
@@ -23,7 +25,7 @@ type Topic struct {
 	Votes		[]Vote
 }
 
-type TopicCreator struct {
+type CreateRequest struct {
 	Title	string
 	Content	string
 }

@@ -312,7 +312,7 @@ curl -v POST \
   -H 'Authorization:Bearer xxx' \
   -d '{ "title": "Title Test 001", "content": "Test contents from script." }'
 */
-func TestTopicCreate(t *testing.T) {
+func TestTopicCreateSuccess(t *testing.T) {
 	db := setupDB()
 	defer db.Close()
 	router := setupRouter()
@@ -337,6 +337,27 @@ func TestTopicCreate(t *testing.T) {
 	assert.True(t, t2.ID > 0)
 
 	TopicID = t2.ID
+}
+
+func TestTopicCreateFailureEmptyTitle(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	t1 := topic.Topic{Content: kTestTopicContent}
+	b, _ := json.Marshal(t1)
+
+	req, _ := http.NewRequest("POST", "/topics", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, error.DomainTopicCreate, e.Domain)
+	assert.Equal(t, error.ReasonNonexistentEntry, e.Reason)
 }
 
 /*

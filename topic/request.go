@@ -1,6 +1,7 @@
 package topic
 
 import (
+	"time"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
@@ -41,12 +42,22 @@ func Create(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	var topicCreator TopicCreator
-	if err := c.ShouldBindJSON(&topicCreator); err != nil {
+	var request CreateRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	topic := Topic{Title: topicCreator.Title, Content: topicCreator.Content, AuthorID: u.ID}
+	if request.Title == "" {
+		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonNonexistentEntry, "Title is missing"))
+		return
+	}
+	topic := Topic{
+		Title: request.Title,
+		Content: request.Content,
+		AuthorID: u.ID,
+		DeadlineStart: time.Unix(3600, 0),
+		DeadlineEnd: time.Unix(3600, 0),
+	}
 	db.Create(&topic)
 	c.JSON(http.StatusOK, topic)
 }
