@@ -47,12 +47,6 @@ func Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	/*
-	if request.Title == "" {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonNonexistentEntry, "Title is missing"))
-		return
-	}
-	*/
 	//	unicode/utf8.RuneCountInString counts characters correctly, 
 	//	but 8 Chinese characters can make a valid title.
 	//	e.g. 川普年底会倒台吗 (Will Trump be impeached by the end of this year)
