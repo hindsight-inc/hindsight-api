@@ -30,7 +30,8 @@ type Topic struct {
 type CreateRequest struct {
 	Title	string
 	Content	string
-	DeadlineStart time.Time
+	DeadlineStart time.Time `json:"deadline_start"`
+	DeadlineEnd time.Time `json:"deadline_end"`
 }
 
 /* Opinion */

@@ -1,7 +1,6 @@
 package topic
 
 import (
-	"time"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
@@ -62,8 +61,8 @@ func Create(c *gin.Context) {
 		Title: request.Title,
 		Content: request.Content,
 		AuthorID: u.ID,
-		DeadlineStart: time.Unix(3600, 0),//request.DeadlineStart,
-		DeadlineEnd: time.Unix(3600, 0),
+		DeadlineStart: request.DeadlineStart,
+		DeadlineEnd: request.DeadlineEnd,
 	}
 	if err := db.Create(&topic).Error; err != nil {
 		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonDatabaseError, err.Error()))

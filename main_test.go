@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	//"time"
+	"time"
 	"net/http"
 	"net/http/httptest"
 	"encoding/json"
@@ -305,6 +305,7 @@ func TestUserTokenRefreshFailureUnauthorized(t *testing.T) {
 }
 
 var TopicID uint
+var	deadline, _ = time.Parse(time.RFC3339, "2023-11-12T11:45:26.371Z")
 
 /*
 curl -v POST \
@@ -319,7 +320,12 @@ func TestTopicCreateSuccess(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	t1 := topic.Topic{Title: kTestTopicTitle, Content: kTestTopicContent}
+	t1 := topic.CreateRequest{
+		Title: kTestTopicTitle,
+		Content: kTestTopicContent,
+		DeadlineStart: deadline,
+		DeadlineEnd: deadline,
+	}
 	b, _ := json.Marshal(t1)
 
 	//	permanently delete previous test topics
@@ -367,7 +373,7 @@ func TestTopicCreateFailureShortTitle(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	t1 := topic.Topic{Title: kShort, Content: kTestTopicContent}
+	t1 := topic.Topic{Title: kShort, Content: kTestTopicContent, DeadlineStart: deadline}
 	b, _ := json.Marshal(t1)
 
 	req, _ := http.NewRequest("POST", "/topics", bytes.NewBuffer(b))
