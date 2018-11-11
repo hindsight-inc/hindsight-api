@@ -44,7 +44,7 @@ func Create(c *gin.Context) {
 	db := database.GetDB()
 	var request CreateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
 	//	unicode/utf8.RuneCountInString counts characters correctly, 
@@ -62,9 +62,12 @@ func Create(c *gin.Context) {
 		Title: request.Title,
 		Content: request.Content,
 		AuthorID: u.ID,
-		DeadlineStart: time.Unix(3600, 0),
+		DeadlineStart: time.Unix(3600, 0),//request.DeadlineStart,
 		DeadlineEnd: time.Unix(3600, 0),
 	}
-	db.Create(&topic)
+	if err := db.Create(&topic).Error; err != nil {
+		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonDatabaseError, err.Error()))
+		return
+	}
 	c.JSON(http.StatusOK, topic)
 }

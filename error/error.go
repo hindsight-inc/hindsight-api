@@ -20,12 +20,13 @@ const DomainFacebookConnect = "facebook.connect"
 const DomainTopicCreate = "topic.create"
 
 const ReasonUnauthorized = "Unauthorized"
-const ReasonDuplicatedEntry = "Duplicated entry"
-const ReasonMismatchedEntry = "Mismatched entry"
-const ReasonNonexistentEntry = "Nonexistent entry"
-const ReasonInvalidEntry = "Invalid entry"
-const ReasonEmptyEntry = "Empty entry"
+const ReasonDuplicatedEntry = "Duplicated Entry"
+const ReasonMismatchedEntry = "Mismatched Entry"
+const ReasonNonexistentEntry = "Nonexistent Entry"
+const ReasonInvalidEntry = "Invalid Entry"
+const ReasonEmptyEntry = "Empty Entry"
 const ReasonInvalidJSON = "Invalid JSON"
+const ReasonDatabaseError = "Database Error"
 
 func Bad(domain string, reason string, message string) (int, gin.H) {
 	return http.StatusBadRequest, gin.H{"domain": domain, "reason": reason, "message": message}
