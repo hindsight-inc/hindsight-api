@@ -25,7 +25,8 @@ const kTestUserPassword = "password123"
 const kTestTopicTitle = "Script Test 测试"
 const kTestTopicContent = "Test contents from script.\n测试内容"
 const kSomething = "sth"
-
+const kShort = "s"
+const kLong = "loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong"
 
 //	API Unit Tests
 
@@ -357,7 +358,49 @@ func TestTopicCreateFailureEmptyTitle(t *testing.T) {
 	var e error.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, error.DomainTopicCreate, e.Domain)
-	assert.Equal(t, error.ReasonNonexistentEntry, e.Reason)
+	assert.Equal(t, error.ReasonInvalidEntry, e.Reason)
+}
+
+func TestTopicCreateFailureShortTitle(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	t1 := topic.Topic{Title: kShort, Content: kTestTopicContent}
+	b, _ := json.Marshal(t1)
+
+	req, _ := http.NewRequest("POST", "/topics", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, error.DomainTopicCreate, e.Domain)
+	assert.Equal(t, error.ReasonInvalidEntry, e.Reason)
+}
+
+func TestTopicCreateFailureLongTitle(t *testing.T) {
+	db := setupDB()
+	defer db.Close()
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	t1 := topic.Topic{Title: kLong, Content: kTestTopicContent}
+	b, _ := json.Marshal(t1)
+
+	req, _ := http.NewRequest("POST", "/topics", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + Token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var e error.APIError
+	json.Unmarshal([]byte(w.Body.String()), &e)
+	assert.Equal(t, error.DomainTopicCreate, e.Domain)
+	assert.Equal(t, error.ReasonInvalidEntry, e.Reason)
 }
 
 /*

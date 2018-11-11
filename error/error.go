@@ -23,6 +23,7 @@ const ReasonUnauthorized = "Unauthorized"
 const ReasonDuplicatedEntry = "Duplicated entry"
 const ReasonMismatchedEntry = "Mismatched entry"
 const ReasonNonexistentEntry = "Nonexistent entry"
+const ReasonInvalidEntry = "Invalid entry"
 const ReasonEmptyEntry = "Empty entry"
 const ReasonInvalidJSON = "Invalid JSON"
 

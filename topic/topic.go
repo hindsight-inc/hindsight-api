@@ -7,6 +7,8 @@ import (
 )
 
 const kPageSize = "10"
+const kTitleMin = 10
+const kTitleMax = 1024
 
 /* Topic */
 
