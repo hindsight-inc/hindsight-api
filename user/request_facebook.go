@@ -1,7 +1,7 @@
 package user
 
 import (
-	"log"
+	//"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -44,14 +44,14 @@ func FacebookAuthenticate(c *gin.Context) (int, gin.H, *User) {
 	}
 
 	//c.JSON(http.StatusOK, fbUser)
-	log.Println(fbUser)
+	//log.Println(fbUser)
 
 	var user User
 	db := database.GetDB()
 
 	if notFound := db.Where(User{FacebookUserID: fbUser.ID}).First(&user).RecordNotFound(); !notFound {
 		// user already exists
-		log.Println(user)
+		//log.Println(user)
 		return http.StatusOK, user.Response(), &user
 	}
 

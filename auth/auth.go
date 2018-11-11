@@ -21,7 +21,6 @@ type Token struct {
 func GetMiddleware() *jwt.GinJWTMiddleware {
 	cfg := config.Shared()
 	//https://godoc.org/gopkg.in/appleboy/gin-jwt.v2
-	log.Println(cfg)
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       cfg.JWT_Realm,
 		Key:         []byte(cfg.JWT_Key),
