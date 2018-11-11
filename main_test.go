@@ -323,8 +323,7 @@ func TestTopicCreateSuccess(t *testing.T) {
 	t1 := topic.CreateRequest{
 		Title: kTestTopicTitle,
 		Content: kTestTopicContent,
-		DeadlineStart: deadline,
-		DeadlineEnd: deadline,
+		MilestoneDeadline: deadline,
 	}
 	b, _ := json.Marshal(t1)
 
@@ -373,7 +372,11 @@ func TestTopicCreateFailureShortTitle(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	t1 := topic.Topic{Title: kShort, Content: kTestTopicContent, DeadlineStart: deadline}
+	t1 := topic.CreateRequest{
+		Title: kShort,
+		Content: kTestTopicContent,
+		MilestoneDeadline: deadline,
+	}
 	b, _ := json.Marshal(t1)
 
 	req, _ := http.NewRequest("POST", "/topics", bytes.NewBuffer(b))

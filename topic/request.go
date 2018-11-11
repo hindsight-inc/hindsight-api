@@ -1,6 +1,8 @@
 package topic
 
 import (
+	//"log"
+	"time"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
@@ -46,23 +48,29 @@ func Create(c *gin.Context) {
 		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidJSON, err.Error()))
 		return
 	}
+	//	TODO: we are not doing null check for required fields because I don't know how to do it in golang.
+	//	API still fails due to ReasonInvalidEntry instead of ReasonNonexistentEntry, but the message will be misleading.
+
 	//	unicode/utf8.RuneCountInString counts characters correctly, 
 	//	but 8 Chinese characters can make a valid title.
 	//	e.g. 川普年底会倒台吗 (Will Trump be impeached by the end of this year)
 	if len(request.Title) < kTitleMin {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidEntry, "Title is too short"))
+		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidEntry, "title is too short"))
 		return
 	}
 	if len(request.Title) > kTitleMax {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidEntry, "Title is too long"))
+		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidEntry, "title is too long"))
+		return
+	}
+	if request.MilestoneDeadline.Before(time.Now().Add(kDeadlineThreshold)) {
+		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonNonexistentEntry, "milestone_deadline is not late enough"))
 		return
 	}
 	topic := Topic{
 		Title: request.Title,
 		Content: request.Content,
 		AuthorID: u.ID,
-		DeadlineStart: request.DeadlineStart,
-		DeadlineEnd: request.DeadlineEnd,
+		MilestoneDeadline: request.MilestoneDeadline,
 	}
 	if err := db.Create(&topic).Error; err != nil {
 		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonDatabaseError, err.Error()))

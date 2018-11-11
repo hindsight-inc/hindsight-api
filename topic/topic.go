@@ -9,6 +9,7 @@ import (
 const kPageSize = "10"
 const kTitleMin = 10
 const kTitleMax = 1024
+const kDeadlineThreshold = time.Hour * 1
 
 /* Topic */
 
@@ -16,8 +17,12 @@ type Topic struct {
 	gorm.Model
 	Title	string `binding:"required"`
 	Content	string
-	DeadlineStart	time.Time
-	DeadlineEnd		time.Time `binding:"required"`
+	/*
+	 We only have one milestone so far.
+	 Potentially, we will have more milestones,
+	 e.g. milestoneInvite, milestoneVote, milestoneEnd, etc.
+	 */
+	MilestoneDeadline time.Time `binding:"required"`
 	Author		user.User
 	AuthorID	uint
 	// PermissionView [User]
@@ -30,8 +35,7 @@ type Topic struct {
 type CreateRequest struct {
 	Title	string
 	Content	string
-	DeadlineStart time.Time `json:"deadline_start"`
-	DeadlineEnd time.Time `json:"deadline_end"`
+	MilestoneDeadline time.Time `json:"milestone_deadline"`
 }
 
 /* Opinion */
