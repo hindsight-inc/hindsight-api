@@ -1,7 +1,7 @@
 package topic
 
 import (
-	"log"
+	//"log"
 	"time"
 	//"strconv"
 	"net/http"
@@ -56,7 +56,6 @@ func VoteOpinion(c *gin.Context) {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidEntry, "Opinion does not belong to this topic"))
 		return
 	}
-	log.Println(opinion)
 
 	//	Get author
 	u := user.Current(c)
@@ -86,6 +85,7 @@ func VoteOpinion(c *gin.Context) {
 		return
 	}
 
+	//	TODO: return something useful, like updated votes count for the topic
 	c.JSON(http.StatusOK, vote.Response())
 }
 
