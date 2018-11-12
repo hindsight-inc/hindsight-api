@@ -1,7 +1,7 @@
 package topic
 
 import (
-	//"log"
+	"log"
 	"time"
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -66,6 +66,8 @@ func Create(c *gin.Context) {
 		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonNonexistentEntry, "milestone_deadline is not late enough"))
 		return
 	}
+
+	//	Create topic
 	topic := Topic{
 		Title: request.Title,
 		Content: request.Content,
@@ -75,6 +77,31 @@ func Create(c *gin.Context) {
 	if err := db.Create(&topic).Error; err != nil {
 		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonDatabaseError, err.Error()))
 		return
+	}
+
+	//	Create opinions
+	opinions := request.Opinions
+	if len(opinions) == 0 {
+		//	Add default opinions; should this logic be handled on front-end side?
+		opinions = append(opinions, OpinionRequest{
+			Title: kDefaultTitle0,
+		}, OpinionRequest{
+			Title: kDefaultTitle1,
+		})
+	}
+
+	for _, o := range opinions {
+		log.Println(o)
+		opinion := Opinion{
+			Title: o.Title,
+			TopicID: topic.ID,
+			AuthorID: u.ID,
+		}
+		if err := db.Create(&opinion).Error; err != nil {
+			c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonDatabaseError, err.Error()))
+			//	TODO: revert topic creation
+			return
+		}
 	}
 	c.JSON(http.StatusOK, topic)
 }

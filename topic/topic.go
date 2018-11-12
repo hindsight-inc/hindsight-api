@@ -10,6 +10,8 @@ const kPageSize = "10"
 const kTitleMin = 10
 const kTitleMax = 1024
 const kDeadlineThreshold = time.Hour * 1
+const kDefaultTitle0 = "Agree"
+const kDefaultTitle1 = "Disagree"
 
 /* Topic */
 
@@ -36,6 +38,7 @@ type CreateRequest struct {
 	Title	string
 	Content	string
 	MilestoneDeadline time.Time `json:"milestone_deadline"`
+	Opinions []OpinionRequest
 }
 
 /* Opinion */
@@ -46,6 +49,10 @@ type Opinion struct {
 	TopicID		uint
 	Author		user.User
 	AuthorID	uint
+}
+
+type OpinionRequest struct {
+	Title		string
 }
 
 /* Vote */
