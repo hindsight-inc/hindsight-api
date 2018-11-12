@@ -48,22 +48,6 @@ func VoteOpinion(c *gin.Context) {
 
 	//	Get opinion
 	var opinion Opinion
-	/*
-	if err := db.Model(topic).Related(&topic.Opinions, "Opinions").Error; err != nil {
-		c.JSON(herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error()))
-		return
-	}
-	for _, o := range topic.Opinions {
-		if strconv.FormatUint(uint64(o.ID), 10) == oid {
-			opinion = o
-			break
-		}
-	}
-	if opinion.ID == 0 {
-		c.JSON(herror.Bad(herror.DomainTopicResponse, herror.ReasonNonexistentEntry, "Opinion not found for this topic"))
-		return
-	}
-	*/
 	if err := db.First(&opinion, oid).Error; err != nil {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
 		return
@@ -85,7 +69,6 @@ func VoteOpinion(c *gin.Context) {
 	vote := Vote{
 		AuthorID: u.ID,
 		TopicID: topic.ID,
-		//OpinionID: opinion.ID,
 	}
 	//	check if user already voted
 	if err := db.First(&vote).Error; err != nil && vote.ID > 0 {
@@ -97,18 +80,13 @@ func VoteOpinion(c *gin.Context) {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDuplicatedEntry, "Cannot re-vote"))
 		return
 	}
+	vote.OpinionID = opinion.ID
 	if err := db.Create(&vote).Error; err != nil {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
 		return
 	}
 
 	c.JSON(http.StatusOK, vote.Response())
-	/*
-	c.JSON(http.StatusOK, gin.H {
-		"topic_id": tid,
-		"opinion_id": oid,
-	})
-	*/
 }
 
 func Create(c *gin.Context) {

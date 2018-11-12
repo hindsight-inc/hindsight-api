@@ -564,3 +564,15 @@ func TestFacebookUserDetailSuccess(t *testing.T) {
 	json.Unmarshal([]byte(w.Body.String()), &u)
 	assert.Contains(t, w.Body.String(), "fb_")	// <- TODO: create a model
 }
+
+//	TODO
+/*
+func TestTopicVote() {
+	need to test:
+
+	success
+	failure due to re-vote
+	failure due to invalid topic ID
+	failure due to invalid opinion ID
+}
+*/
