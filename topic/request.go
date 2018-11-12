@@ -1,7 +1,7 @@
 package topic
 
 import (
-	"log"
+	//"log"
 	"time"
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,10 @@ func List(c *gin.Context) {
 	limit := c.DefaultQuery("limit", kPageSize)
 	db := database.GetDB()
 	var topics []Topic
-	db.Order("updated_at desc, created_at desc").Offset(offset).Limit(limit).Find(&topics)
+	if err := db.Order("updated_at desc, created_at desc").Offset(offset).Limit(limit).Find(&topics).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
 	c.JSON(http.StatusOK, topics)
 }
 
@@ -23,8 +26,23 @@ func Detail(c *gin.Context) {
 	db := database.GetDB()
 	id := c.Param("id")
 	var topic Topic
-	db.First(&topic, id)
+	if err := db.First(&topic, id).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
 	c.JSON(topic.DetailResponse())
+}
+
+func VoteOpinion(c *gin.Context) {
+	db := database.GetDB()
+	tid := c.Param("id")
+	oid := c.Param("oid")
+	var topic Topic
+	db.First(&topic, tid)
+	c.JSON(http.StatusOK, gin.H {
+		"topic_id": tid,
+		"opinion_id": oid,
+	})
 }
 
 func Create(c *gin.Context) {
@@ -84,7 +102,6 @@ func Create(c *gin.Context) {
 	}
 
 	for _, o := range opinions {
-		log.Println(o)
 		opinion := Opinion{
 			Title: o.Title,
 			TopicID: topic.ID,

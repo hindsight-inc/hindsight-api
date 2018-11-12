@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	//"log"
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
 	"github.com/jinzhu/gorm"
@@ -81,6 +81,7 @@ func setupRouter() *gin.Engine {
 		authRoot.GET("/topics", topic.List)
 		authRoot.GET("/topics/:id", topic.Detail)
 		authRoot.POST("/topics", topic.Create)
+		authRoot.POST("/topics/:id/vote/:oid", topic.VoteOpinion)
 	}
 
 	return r
