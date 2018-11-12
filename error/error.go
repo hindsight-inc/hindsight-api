@@ -18,6 +18,8 @@ const DomainUserLogin = "user.login"
 const DomainUserInfo = "user.info"
 const DomainFacebookConnect = "facebook.connect"
 const DomainTopicCreate = "topic.create"
+const DomainUserResponse = "topic.response"
+const DomainTopicResponse = "topic.response"
 
 const ReasonUnauthorized = "Unauthorized"
 const ReasonDuplicatedEntry = "Duplicated Entry"

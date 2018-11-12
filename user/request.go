@@ -80,5 +80,5 @@ func UserInfo(c *gin.Context) {
 		c.JSON(error.Bad(error.DomainUserInfo, error.ReasonNonexistentEntry, "User not found"))
 		return
 	}
-	c.JSON(http.StatusOK, user.DetailResponse())
+	c.JSON(user.DetailResponse())
 }

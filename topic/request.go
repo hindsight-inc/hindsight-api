@@ -23,7 +23,7 @@ func List(c *gin.Context) {
 	db := database.GetDB()
 	var topics []Topic
 	db.Order("updated_at desc, created_at desc").Offset(offset).Limit(limit).Find(&topics)
-	c.JSON(200, topics)
+	c.JSON(http.StatusOK, topics)
 }
 
 func Detail(c *gin.Context) {
@@ -31,7 +31,7 @@ func Detail(c *gin.Context) {
 	id := c.Param("id")
 	var topic Topic
 	db.First(&topic, id)
-	c.JSON(200, topic)
+	c.JSON(http.StatusOK, topic)
 }
 
 func Create(c *gin.Context) {
@@ -103,5 +103,5 @@ func Create(c *gin.Context) {
 			return
 		}
 	}
-	c.JSON(http.StatusOK, topic)
+	c.JSON(topic.DetailResponse())
 }

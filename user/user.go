@@ -2,11 +2,13 @@ package user
 
 import (
 	//"log"
+	"net/http"
 	"github.com/jinzhu/gorm"
 	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
 	"hindsight/database"
 	"hindsight/facebook"
+	//"hindsight/error"
 )
 
 type User struct {
@@ -21,16 +23,26 @@ type User struct {
 /* Response */
 
 func (self *User) Response() gin.H {
-	return gin.H{"id": self.ID, "username": self.Username}
+	return gin.H{
+		"id": self.ID,
+		"username": self.Username,
+	}
 }
 
-func (self *User) DetailResponse() gin.H {
+func (self *User) DetailResponse() (int, gin.H) {
 	// TODO: this is just an example, it will be changed base on actual business logic.
 	db := database.GetDB()
-	if err := db.Model(self).Related(&self.FacebookUser, "FacebookUser").Error; err != nil {
-		return gin.H{"id": self.ID, "username": self.Username, "facebook_name": "N/A"}
+	db.Model(self).Related(&self.FacebookUser, "FacebookUser")
+	/*
+	if err := db.Model(self).Related(&self.FacebookUser, "FacebookUser").Error; err != nil && err != db.UserNotFound() {
+		return error.Bad(error.DomainUserResponse, error.ReasonDatabaseError, err.Error())
 	}
-	return gin.H{"id": self.ID, "username": self.Username, "facebook_name": self.FacebookUser.Name}
+	*/
+	return http.StatusOK, gin.H{
+		"id": self.ID,
+		"username": self.Username,
+		"facebook_user": self.FacebookUser.Response(),
+	}
 }
 
 /* Auth */

@@ -2,8 +2,12 @@ package topic
 
 import (
 	"time"
+	"net/http"
 	"github.com/jinzhu/gorm"
+	"github.com/gin-gonic/gin"
 	"hindsight/user"
+	"hindsight/database"
+	"hindsight/error"
 )
 
 const kPageSize = "10"
@@ -39,6 +43,25 @@ type CreateRequest struct {
 	Content	string
 	MilestoneDeadline time.Time `json:"milestone_deadline"`
 	Opinions []OpinionRequest
+}
+
+func (self *Topic) DetailResponse() (int, gin.H) {
+	db := database.GetDB()
+	//	TODO: how to get gin.H from struct?
+	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
+		return error.Bad(error.DomainTopicResponse, error.ReasonDatabaseError, err.Error())
+	}
+	code, h := self.Author.DetailResponse()
+	if code != http.StatusOK {
+		return code, h
+	}
+	return http.StatusOK, gin.H{
+		"id": self.ID,
+		"title": self.Title,
+		"content": self.Content,
+		"milestone_deadline": self.MilestoneDeadline,
+		"author": h,
+	}
 }
 
 /* Opinion */

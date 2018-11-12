@@ -5,6 +5,7 @@ import (
 	"errors"
     "github.com/huandu/facebook"
 	"github.com/jinzhu/gorm"
+	"github.com/gin-gonic/gin"
 	"github.com/rs/xid"
 	"hindsight/config"
 	"hindsight/database"
@@ -31,10 +32,20 @@ func (self *User) UniqueUsername() string {
 	return "fb_" + strconv.FormatInt(self.FacebookID, 10) + "_" + guid.String()
 }
 
-// request
+/* Request */
 
 type ConnectRequest struct {
 	AccessToken string `json:"access_token"`
+}
+
+/* Response */
+
+func (self *User) Response() gin.H {
+	return gin.H{
+		"id": self.ID,
+		"name": self.Name,
+		"avatar_url": self.AvatarURL,
+	}
 }
 
 // local

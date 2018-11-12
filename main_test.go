@@ -237,7 +237,6 @@ func TestUserDetailSuccess(t *testing.T) {
 	var u user.User
 	json.Unmarshal([]byte(w.Body.String()), &u)
 	assert.Equal(t, u.Username, kTestUserUsername)
-	assert.Contains(t, w.Body.String(), "N/A")	// <- TODO: this test shall break when we actually work on user detail API
 }
 
 func TestUserTokenPingFailureUnauthorized(t *testing.T) {
