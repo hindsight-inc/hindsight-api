@@ -38,11 +38,24 @@ type Topic struct {
 	Votes		[]Vote
 }
 
+/* Request */
+
 type CreateRequest struct {
 	Title	string
 	Content	string
 	MilestoneDeadline time.Time `json:"milestone_deadline"`
 	Opinions []OpinionRequest
+}
+
+/* Response */
+
+func (self *Topic) Response() gin.H {
+	return gin.H{
+		"id": self.ID,
+		"title": self.Title,
+		"content": self.Content,
+		"milestone_deadline": self.MilestoneDeadline,
+	}
 }
 
 func (self *Topic) DetailResponse() (int, gin.H) {

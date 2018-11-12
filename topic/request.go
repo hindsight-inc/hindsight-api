@@ -10,13 +10,6 @@ import (
 	"hindsight/error"
 )
 
-func (self *Topic) Response() gin.H {
-	return gin.H{
-		"title": self.Title,
-		"content": self.Content,
-	}
-}
-
 func List(c *gin.Context) {
 	offset := c.DefaultQuery("offset", "0")
 	limit := c.DefaultQuery("limit", kPageSize)
@@ -31,7 +24,7 @@ func Detail(c *gin.Context) {
 	id := c.Param("id")
 	var topic Topic
 	db.First(&topic, id)
-	c.JSON(http.StatusOK, topic)
+	c.JSON(topic.DetailResponse())
 }
 
 func Create(c *gin.Context) {
@@ -103,5 +96,5 @@ func Create(c *gin.Context) {
 			return
 		}
 	}
-	c.JSON(topic.DetailResponse())
+	c.JSON(http.StatusOK, topic.Response())
 }
