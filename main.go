@@ -52,9 +52,9 @@ func setupRouter() *gin.Engine {
 	r.POST("/user/login", authMiddleware.LoginHandler)
 	r.POST("/user/connect", authMiddleware.LoginHandler)
 	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
-		claims := jwt.ExtractClaims(c)
-		log.Printf("NoRoute claims: %#v\n", claims)
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
+		//claims := jwt.ExtractClaims(c)
+		//log.Printf("NoRoute claims: %#v\n", claims)
+		c.JSON(404, gin.H{"message": "Invalid API"})
 	})
 
 	auth := r.Group("/token")
@@ -67,6 +67,7 @@ func setupRouter() *gin.Engine {
 				"message": "pong",
 				"claim_id": claims[user.IdentityKey],
 				"username": u.(*user.User).Username,	//	TODO: replace Username with ID, as Username will be nullable
+				"id": u.(*user.User).ID,				//	TODO: why cannot obtain u.ID?
 			})
 		})
 		auth.GET("/refresh", authMiddleware.RefreshHandler)
