@@ -8,7 +8,7 @@ import (
 	"github.com/appleboy/gin-jwt"
 	"hindsight/database"
 	"hindsight/facebook"
-	//"hindsight/error"
+	//"hindsight/herror"
 )
 
 type User struct {
@@ -35,7 +35,7 @@ func (self *User) DetailResponse() (int, gin.H) {
 	db.Model(self).Related(&self.FacebookUser, "FacebookUser")
 	/*
 	if err := db.Model(self).Related(&self.FacebookUser, "FacebookUser").Error; err != nil && err != db.UserNotFound() {
-		return error.Bad(error.DomainUserResponse, error.ReasonDatabaseError, err.Error())
+		return herror.Bad(herror.DomainUserResponse, herror.ReasonDatabaseError, err.Error())
 	}
 	*/
 	return http.StatusOK, gin.H{

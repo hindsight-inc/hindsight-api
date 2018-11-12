@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
 	"hindsight/user"
-	"hindsight/error"
+	"hindsight/herror"
 )
 
 func List(c *gin.Context) {
@@ -31,14 +31,14 @@ func Create(c *gin.Context) {
 	u := user.Current(c)
 	if u == nil {
 		//	Shouldn't reach here unless user has been deleted but active token is not
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonNonexistentEntry, "User not found"))
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonNonexistentEntry, "User not found"))
 		return
 	}
 
 	db := database.GetDB()
 	var request CreateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidJSON, err.Error()))
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidJSON, err.Error()))
 		return
 	}
 	//	TODO: we are not doing null check for required fields because I don't know how to do it in golang.
@@ -48,15 +48,15 @@ func Create(c *gin.Context) {
 	//	but 8 Chinese characters can make a valid title.
 	//	e.g. 川普年底会倒台吗 (Will Trump be impeached by the end of this year)
 	if len(request.Title) < kTitleMin {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidEntry, "title is too short"))
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidEntry, "title is too short"))
 		return
 	}
 	if len(request.Title) > kTitleMax {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonInvalidEntry, "title is too long"))
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidEntry, "title is too long"))
 		return
 	}
 	if request.MilestoneDeadline.Before(time.Now().Add(kDeadlineThreshold)) {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonNonexistentEntry, "milestone_deadline is not late enough"))
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonNonexistentEntry, "milestone_deadline is not late enough"))
 		return
 	}
 
@@ -68,7 +68,7 @@ func Create(c *gin.Context) {
 		MilestoneDeadline: request.MilestoneDeadline,
 	}
 	if err := db.Create(&topic).Error; err != nil {
-		c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonDatabaseError, err.Error()))
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
 		return
 	}
 
@@ -91,7 +91,7 @@ func Create(c *gin.Context) {
 			AuthorID: u.ID,
 		}
 		if err := db.Create(&opinion).Error; err != nil {
-			c.JSON(error.Bad(error.DomainTopicCreate, error.ReasonDatabaseError, err.Error()))
+			c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
 			//	TODO: revert topic creation
 			return
 		}

@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	//"github.com/appleboy/gin-jwt"
 	"hindsight/database"
-	apiError "hindsight/error"
+	"hindsight/herror"
 	"hindsight/facebook"
 )
 
@@ -26,12 +26,12 @@ func FacebookConnect(c *gin.Context) {
 func FacebookAuthenticate(c *gin.Context) (int, gin.H, *User) {
 	var request facebook.ConnectRequest
 	if err := c.ShouldBindBodyWith(&request, binding.JSON); err != nil {
-		code, response := apiError.Bad(apiError.DomainFacebookConnect, apiError.ReasonInvalidJSON, err.Error())
+		code, response := herror.Bad(herror.DomainFacebookConnect, herror.ReasonInvalidJSON, err.Error())
 		return code, response, nil
 	}
 
 	if request.AccessToken == "" {
-		code, response := apiError.Bad(apiError.DomainFacebookConnect, apiError.ReasonInvalidJSON, "Invalid access_token")
+		code, response := herror.Bad(herror.DomainFacebookConnect, herror.ReasonInvalidJSON, "Invalid access_token")
 		return code, response, nil
 	}
 
@@ -39,7 +39,7 @@ func FacebookAuthenticate(c *gin.Context) (int, gin.H, *User) {
 	var err error
 	//log.Println(request)
 	if fbUser, err = facebook.Connect(request.AccessToken); err != nil {
-		code, response := apiError.Bad(apiError.DomainFacebookConnect, apiError.ReasonInvalidJSON, err.Error())
+		code, response := herror.Bad(herror.DomainFacebookConnect, herror.ReasonInvalidJSON, err.Error())
 		return code, response, nil
 	}
 
@@ -58,7 +58,7 @@ func FacebookAuthenticate(c *gin.Context) (int, gin.H, *User) {
 	// create new user with a randomized unique username
 	user = User{Username: fbUser.UniqueUsername(), FacebookUserID: fbUser.ID}
 	if err := db.Create(&user).Error; err != nil {
-		code, response := apiError.Bad(apiError.DomainUserRegister, apiError.ReasonDuplicatedEntry, err.Error())
+		code, response := herror.Bad(herror.DomainUserRegister, herror.ReasonDuplicatedEntry, err.Error())
 		return code, response, nil
 	}
 

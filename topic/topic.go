@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"hindsight/user"
 	"hindsight/database"
-	"hindsight/error"
+	"hindsight/herror"
 )
 
 const kPageSize = "10"
@@ -62,10 +62,10 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 	db := database.GetDB()
 	//	TODO: how to get gin.H from struct?
 	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
-		return error.Bad(error.DomainTopicResponse, error.ReasonDatabaseError, err.Error())
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
 	}
 	if err := db.Model(self).Related(&self.Opinions, "Opinions").Error; err != nil {
-		return error.Bad(error.DomainTopicResponse, error.ReasonDatabaseError, err.Error())
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
 	}
 	code, h := self.Author.DetailResponse()
 	if code != http.StatusOK {

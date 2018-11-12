@@ -10,7 +10,7 @@ import (
 	"github.com/appleboy/gin-jwt"
 	"hindsight/user"
 	"hindsight/config"
-	apiError "hindsight/error"
+	"hindsight/herror"
 )
 
 type Token struct {
@@ -74,8 +74,8 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
-				"domain": apiError.DomainAuthJWT,
-				"reason": apiError.ReasonUnauthorized,
+				"domain": herror.DomainAuthJWT,
+				"reason": herror.ReasonUnauthorized,
 				"message": message,
 			})
 		},

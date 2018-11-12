@@ -16,7 +16,7 @@ import (
 	"hindsight/auth"
 	"hindsight/user"
 	"hindsight/topic"
-	"hindsight/error"
+	"hindsight/herror"
 	"hindsight/config"
 )
 
@@ -105,11 +105,11 @@ func TestUserRegisterFailureDuplicated(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Equal(t, error.DomainUserRegister, e.Domain)
-	assert.Equal(t, error.ReasonDuplicatedEntry, e.Reason)
+	assert.Equal(t, herror.DomainUserRegister, e.Domain)
+	assert.Equal(t, herror.ReasonDuplicatedEntry, e.Reason)
 }
 
 var Token string
@@ -159,15 +159,15 @@ func TestUserLoginFailureNonexistent(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 	//	authMiddleware.LoginHandler
-	assert.Equal(t, error.DomainAuthJWT, e.Domain)
-	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+	assert.Equal(t, herror.DomainAuthJWT, e.Domain)
+	assert.Equal(t, herror.ReasonUnauthorized, e.Reason)
 	//	user.UserLogin
-	//assert.Equal(t, error.DomainUserLogin, e.Domain)
-	//assert.Equal(t, error.ReasonNonexistentEntry, e.Reason)
+	//assert.Equal(t, herror.DomainUserLogin, e.Domain)
+	//assert.Equal(t, herror.ReasonNonexistentEntry, e.Reason)
 }
 
 func TestUserLoginFailureMismatch(t *testing.T) {
@@ -183,11 +183,11 @@ func TestUserLoginFailureMismatch(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Equal(t, error.DomainAuthJWT, e.Domain)
-	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+	assert.Equal(t, herror.DomainAuthJWT, e.Domain)
+	assert.Equal(t, herror.ReasonUnauthorized, e.Reason)
 }
 
 /*
@@ -251,11 +251,11 @@ func TestUserTokenPingFailureUnauthorized(t *testing.T) {
 	req.Header.Add("Authorization", "Bearer " + Token + kSomething)
 	router.ServeHTTP(w, req)
 
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Equal(t, error.DomainAuthJWT, e.Domain)
-	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+	assert.Equal(t, herror.DomainAuthJWT, e.Domain)
+	assert.Equal(t, herror.ReasonUnauthorized, e.Reason)
 }
 
 /*
@@ -296,11 +296,11 @@ func TestUserTokenRefreshFailureUnauthorized(t *testing.T) {
 	req.Header.Add("Authorization", "Bearer " + Token + kSomething)
 	router.ServeHTTP(w, req)
 
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Equal(t, error.DomainAuthJWT, e.Domain)
-	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+	assert.Equal(t, herror.DomainAuthJWT, e.Domain)
+	assert.Equal(t, herror.ReasonUnauthorized, e.Reason)
 }
 
 var TopicID uint
@@ -359,10 +359,10 @@ func TestTopicCreateFailureEmptyTitle(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
-	assert.Equal(t, error.DomainTopicCreate, e.Domain)
-	assert.Equal(t, error.ReasonInvalidEntry, e.Reason)
+	assert.Equal(t, herror.DomainTopicCreate, e.Domain)
+	assert.Equal(t, herror.ReasonInvalidEntry, e.Reason)
 }
 
 func TestTopicCreateFailureShortTitle(t *testing.T) {
@@ -384,10 +384,10 @@ func TestTopicCreateFailureShortTitle(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
-	assert.Equal(t, error.DomainTopicCreate, e.Domain)
-	assert.Equal(t, error.ReasonInvalidEntry, e.Reason)
+	assert.Equal(t, herror.DomainTopicCreate, e.Domain)
+	assert.Equal(t, herror.ReasonInvalidEntry, e.Reason)
 }
 
 func TestTopicCreateFailureLongTitle(t *testing.T) {
@@ -405,10 +405,10 @@ func TestTopicCreateFailureLongTitle(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
-	assert.Equal(t, error.DomainTopicCreate, e.Domain)
-	assert.Equal(t, error.ReasonInvalidEntry, e.Reason)
+	assert.Equal(t, herror.DomainTopicCreate, e.Domain)
+	assert.Equal(t, herror.ReasonInvalidEntry, e.Reason)
 }
 
 /*
@@ -509,11 +509,11 @@ func TestUserConnectFacebookFailureBadToken(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Equal(t, error.DomainAuthJWT, e.Domain)
-	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+	assert.Equal(t, herror.DomainAuthJWT, e.Domain)
+	assert.Equal(t, herror.ReasonUnauthorized, e.Reason)
 }
 
 func TestUserConnectFailureBadMethod(t *testing.T) {
@@ -534,11 +534,11 @@ func TestUserConnectFailureBadMethod(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 
-	var e error.APIError
+	var e herror.APIError
 	json.Unmarshal([]byte(w.Body.String()), &e)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Equal(t, error.DomainAuthJWT, e.Domain)
-	assert.Equal(t, error.ReasonUnauthorized, e.Reason)
+	assert.Equal(t, herror.DomainAuthJWT, e.Domain)
+	assert.Equal(t, herror.ReasonUnauthorized, e.Reason)
 }
 
 func TestFacebookUserDetailSuccess(t *testing.T) {
