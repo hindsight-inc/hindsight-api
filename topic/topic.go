@@ -34,7 +34,7 @@ type Topic struct {
 	// PermissionView [User]
 	// PermissionVote [User]
 	// Cover Image
-	Opinions	[]Opinion
+	Opinions	tOpinions
 	Votes		[]Vote
 }
 
@@ -64,6 +64,9 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
 		return error.Bad(error.DomainTopicResponse, error.ReasonDatabaseError, err.Error())
 	}
+	if err := db.Model(self).Related(&self.Opinions, "Opinions").Error; err != nil {
+		return error.Bad(error.DomainTopicResponse, error.ReasonDatabaseError, err.Error())
+	}
 	code, h := self.Author.DetailResponse()
 	if code != http.StatusOK {
 		return code, h
@@ -74,6 +77,7 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 		"content": self.Content,
 		"milestone_deadline": self.MilestoneDeadline,
 		"author": h,
+		"opinions": self.Opinions.Response(),
 	}
 }
 
@@ -87,9 +91,33 @@ type Opinion struct {
 	AuthorID	uint
 }
 
+type tOpinions []Opinion
+
+/* Request */
+
 type OpinionRequest struct {
 	Title		string
 }
+
+/* Response */
+
+func (self *Opinion) Response() gin.H {
+	return gin.H{"title": self.Title}
+}
+
+func (self *tOpinions) Response() []gin.H {
+	var opinions []gin.H
+	for _, opinion := range *self {
+		opinions = append(opinions, opinion.Response())
+	}
+	return opinions
+}
+
+/*
+type OpinionResponse struct {
+	Title		string
+}
+*/
 
 /* Vote */
 
