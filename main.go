@@ -60,7 +60,15 @@ func setupRouter() *gin.Engine {
 	auth := r.Group("/token")
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
-		auth.GET("/ping", user.PingHandler)
+		auth.GET("/ping", func(c *gin.Context) {
+			claims := jwt.ExtractClaims(c)
+			u, _ := c.Get(user.IdentityKey)
+			c.JSON(200, gin.H{
+				"message": "pong",
+				"claim_id": claims[user.IdentityKey],
+				"username": u.(*user.User).Username,	//	TODO: replace Username with ID, as Username will be nullable
+			})
+		})
 		auth.GET("/refresh", authMiddleware.RefreshHandler)
 	}
 
