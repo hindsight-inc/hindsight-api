@@ -1,8 +1,9 @@
 package topic
 
 import (
-	//"log"
+	"log"
 	"time"
+	//"strconv"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
@@ -37,12 +38,77 @@ func VoteOpinion(c *gin.Context) {
 	db := database.GetDB()
 	tid := c.Param("id")
 	oid := c.Param("oid")
+
+	//	Get topic
 	var topic Topic
-	db.First(&topic, tid)
+	if err := db.First(&topic, tid).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
+
+	//	Get opinion
+	var opinion Opinion
+	/*
+	if err := db.Model(topic).Related(&topic.Opinions, "Opinions").Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
+	for _, o := range topic.Opinions {
+		if strconv.FormatUint(uint64(o.ID), 10) == oid {
+			opinion = o
+			break
+		}
+	}
+	if opinion.ID == 0 {
+		c.JSON(herror.Bad(herror.DomainTopicResponse, herror.ReasonNonexistentEntry, "Opinion not found for this topic"))
+		return
+	}
+	*/
+	if err := db.First(&opinion, oid).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
+	if opinion.TopicID != topic.ID {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidEntry, "Opinion does not belong to this topic"))
+		return
+	}
+	log.Println(opinion)
+
+	//	Get author
+	u := user.Current(c)
+	if u == nil {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonNonexistentEntry, "User not found"))
+		return
+	}
+
+	//	Create vote
+	vote := Vote{
+		AuthorID: u.ID,
+		TopicID: topic.ID,
+		//OpinionID: opinion.ID,
+	}
+	//	check if user already voted
+	if err := db.First(&vote).Error; err != nil && vote.ID > 0 {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
+	//	TODO: re-vote logic will be decided after UI is done
+	if vote.ID > 0 {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDuplicatedEntry, "Cannot re-vote"))
+		return
+	}
+	if err := db.Create(&vote).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, vote.Response())
+	/*
 	c.JSON(http.StatusOK, gin.H {
 		"topic_id": tid,
 		"opinion_id": oid,
 	})
+	*/
 }
 
 func Create(c *gin.Context) {

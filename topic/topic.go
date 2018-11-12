@@ -87,6 +87,19 @@ type Vote struct {
 	gorm.Model
 	Topic		Topic
 	TopicID		uint
+	Opinion		Opinion
+	OpinionID	uint
 	Author		user.User
 	AuthorID	uint
+}
+
+/* Response */
+
+func (self *Vote) Response() gin.H {
+	return gin.H{
+		"id": self.ID,
+		"topic_id": self.TopicID,
+		"opinion_id": self.OpinionID,
+		"author_id": self.AuthorID,
+	}
 }
