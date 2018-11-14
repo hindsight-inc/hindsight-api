@@ -2,3 +2,4 @@
 .*.sw*
 hindsight
 config/secret.yaml
+public/upload/image/*

@@ -11,7 +11,7 @@ func main() {
 	router := gin.Default()
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
-	router.Static("/", "./public")
+	router.Static("/", "../public/upload/image")
 	router.POST("/upload", func(c *gin.Context) {
 		name := c.PostForm("name")
 		email := c.PostForm("email")
@@ -23,7 +23,7 @@ func main() {
 			return
 		}
 
-		if err := c.SaveUploadedFile(file, file.Filename); err != nil {
+		if err := c.SaveUploadedFile(file, "../public/upload/image/" + file.Filename); err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		}
