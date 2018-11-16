@@ -43,7 +43,7 @@ func setupRouter() *gin.Engine {
 	//	route
 	r := gin.Default()
 	r.MaxMultipartMemory = 8 << 20 // 8 MiB
-	//r.Static("/", "./public/upload/image")
+	r.Static("/image", "./public/upload/image")
 	r.GET("/test", internalTest)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
