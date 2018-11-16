@@ -86,7 +86,7 @@ func VoteOpinion(c *gin.Context) {
 	}
 
 	//	TODO: return something useful, like updated votes count for the topic
-	c.JSON(http.StatusOK, vote.Response())
+	c.JSON(vote.Response())
 }
 
 func Create(c *gin.Context) {
