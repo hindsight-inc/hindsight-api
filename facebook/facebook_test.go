@@ -9,7 +9,7 @@ import (
 )
 
 func TestFacebookInit(t *testing.T) {
-	provider := new(config.ConfigProvider)
+	provider := new(config.ViperProvider)
 	if cfg, err := config.Init(provider); cfg.Facebook_disable_test {
 		log.Println("Facebook test disabled due to configuration")
 		return

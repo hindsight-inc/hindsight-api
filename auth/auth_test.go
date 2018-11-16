@@ -8,7 +8,7 @@ import (
 )
 
 func TestAuthMiddleware(t *testing.T) {
-	provider := new(config.ConfigProvider)
+	provider := new(config.ViperProvider)
 	_, err := config.Init(provider)
 	assert.Empty(t, err)
 

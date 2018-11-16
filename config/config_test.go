@@ -8,7 +8,7 @@ import (
 
 func TestInit(t *testing.T) {
 	//t.Log("Test: Config")
-	provider := new(ConfigProvider)
+	provider := new(ViperProvider)
 	c, err := Init(provider)
 
 	assert.Empty(t, err)

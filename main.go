@@ -96,7 +96,7 @@ func setupRouter() *gin.Engine {
 }
 
 func setupConfig() {
-	provider := new(config.ConfigProvider)
+	provider := new(config.ViperProvider)
 	if _, err := config.Init(provider); err != nil {
 		panic(err)
 	}

@@ -15,7 +15,7 @@ type Configuration struct {
 
 var Config *Configuration
 
-func loadConfiguration(config configurationLoader) error {
+func loadConfiguration(config loader) error {
 
 	config.setConfig("config", "yaml", ".")
 	config.setConfig("config", "yaml", "./config/")
@@ -31,7 +31,7 @@ func loadConfiguration(config configurationLoader) error {
 	return nil
 }
 
-func readConfiguration(config configurationReader) (*Configuration, error) {
+func readConfiguration(config reader) (*Configuration, error) {
 	Config = &Configuration{
 		MySQL_database: config.getString("mysql_database"),
 		MySQL_password: config.getString("mysql_password"),
