@@ -61,7 +61,7 @@ var me User
  Requires database initialization.
  */
 func Init() error {
-	db = database.GetDB()
+	db = database.Shared()
 	/*
 	if _, err := config.Init(); err != nil {
 		return err

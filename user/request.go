@@ -17,7 +17,7 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
-	db := database.GetDB()
+	db := database.Shared()
 	if notFound := db.Where(User{Username: user.Username}).First(&user).RecordNotFound(); !notFound {
 		c.JSON(herror.Bad(herror.DomainUserRegister, herror.ReasonDuplicatedEntry, "User already exists"))
 		return
@@ -35,7 +35,7 @@ func Authenticate(c *gin.Context) (int, gin.H, *User) {
 	}
 
 	var user User
-	db := database.GetDB()
+	db := database.Shared()
 	db.Where(User{Username: json.Username}).First(&user)
 	if user.ID == 0 {
 		code, response := herror.Unauthorized(herror.DomainUserLogin, herror.ReasonNonexistentEntry, "User not found")
@@ -51,7 +51,7 @@ func Authenticate(c *gin.Context) (int, gin.H, *User) {
 func Authorize(c *gin.Context, username string) bool {
 	//	Current behavior: user has access to everything as long as s/he's logged in
 	var user User
-	db := database.GetDB()
+	db := database.Shared()
 	return !db.Where(User{Username: username}).First(&user).RecordNotFound()
 }
 
@@ -73,7 +73,7 @@ func UserInfo(c *gin.Context) {
 	username := claim.(string)
 	//user, _ := c.Get(IdentityKey)
 	//username := user.(*User).Username
-	db := database.GetDB()
+	db := database.Shared()
 	db.Where(User{Username: username}).First(&user)
 	if user.ID == 0 {
 		//	Shouldn't reach here unless user has been deleted but active token is not

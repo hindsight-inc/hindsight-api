@@ -27,6 +27,6 @@ func Init() *gorm.DB {
 	return DB
 }
 
-func GetDB() *gorm.DB {
+func Shared() *gorm.DB {
 	return DB
 }

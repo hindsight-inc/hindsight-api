@@ -47,7 +47,7 @@ func FacebookAuthenticate(c *gin.Context) (int, gin.H, *User) {
 	//log.Println(fbUser)
 
 	var user User
-	db := database.GetDB()
+	db := database.Shared()
 
 	if notFound := db.Where(User{FacebookUserID: fbUser.ID}).First(&user).RecordNotFound(); !notFound {
 		// user already exists

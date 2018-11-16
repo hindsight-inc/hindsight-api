@@ -59,7 +59,7 @@ func (self *Topic) Response() gin.H {
 }
 
 func (self *Topic) DetailResponse() (int, gin.H) {
-	db := database.GetDB()
+	db := database.Shared()
 	//	TODO: how to get gin.H from struct?
 	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
 		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
@@ -106,7 +106,7 @@ type tVotes []Vote
 /* Response */
 
 func (self *Vote) Response() (int, gin.H) {
-	db := database.GetDB()
+	db := database.Shared()
 	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
 		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
 	}
