@@ -31,7 +31,7 @@ func (self *User) Response() gin.H {
 
 func (self *User) DetailResponse() (int, gin.H) {
 	// TODO: this is just an example, it will be changed base on actual business logic.
-	db := database.GetDB()
+	db := database.Shared()
 	db.Model(self).Related(&self.FacebookUser, "FacebookUser")
 	/*
 	if err := db.Model(self).Related(&self.FacebookUser, "FacebookUser").Error; err != nil && err != db.UserNotFound() {
@@ -58,7 +58,7 @@ func Current(c *gin.Context) *User {
 		return nil
 	}
 	username := claim.(string)
-	db := database.GetDB()
+	db := database.Shared()
 	db.Where(User{Username: username}).First(&u)
 	if u.ID == 0 {
 		return nil

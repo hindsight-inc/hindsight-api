@@ -14,7 +14,7 @@ import (
 func List(c *gin.Context) {
 	offset := c.DefaultQuery("offset", "0")
 	limit := c.DefaultQuery("limit", kPageSize)
-	db := database.GetDB()
+	db := database.Shared()
 	var topics []Topic
 	if err := db.Order("updated_at desc, created_at desc").Offset(offset).Limit(limit).Find(&topics).Error; err != nil {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
@@ -24,7 +24,7 @@ func List(c *gin.Context) {
 }
 
 func Detail(c *gin.Context) {
-	db := database.GetDB()
+	db := database.Shared()
 	id := c.Param("id")
 	var topic Topic
 	if err := db.First(&topic, id).Error; err != nil {
@@ -35,7 +35,7 @@ func Detail(c *gin.Context) {
 }
 
 func VoteOpinion(c *gin.Context) {
-	db := database.GetDB()
+	db := database.Shared()
 	tid := c.Param("id")
 	oid := c.Param("oid")
 
@@ -97,7 +97,7 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	db := database.GetDB()
+	db := database.Shared()
 	var request CreateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidJSON, err.Error()))

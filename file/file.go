@@ -59,7 +59,7 @@ func UploadImage(c *gin.Context) {
 		UID: uid,
 	}
 
-	db := database.GetDB()
+	db := database.Shared()
 	if err := db.Create(&image).Error; err != nil {
 		c.JSON(herror.Bad(herror.DomainUploadImage, herror.ReasonDatabaseError, err.Error()))
 		return
