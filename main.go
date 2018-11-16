@@ -10,6 +10,7 @@ import (
 	"hindsight/config"
 	"hindsight/database"
 	"hindsight/facebook"
+	"hindsight/file"
 	"hindsight/topic"
 	"hindsight/user"
 )
@@ -24,10 +25,13 @@ func setupAuth() *jwt.GinJWTMiddleware {
 func setupDB() *gorm.DB {
 	db := database.Init()
 	db.AutoMigrate(&user.User{})
+	db.AutoMigrate(&facebook.User{})
+
 	db.AutoMigrate(&topic.Topic{})
 	db.AutoMigrate(&topic.Opinion{})
 	db.AutoMigrate(&topic.Vote{})
-	db.AutoMigrate(&facebook.User{})
+
+	db.AutoMigrate(&file.Image{})
 	return db
 }
 
@@ -38,6 +42,8 @@ func internalTest(c *gin.Context) {
 func setupRouter() *gin.Engine {
 	//	route
 	r := gin.Default()
+	r.MaxMultipartMemory = 8 << 20 // 8 MiB
+	//r.Static("/", "./public/upload/image")
 	r.GET("/test", internalTest)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -82,6 +88,8 @@ func setupRouter() *gin.Engine {
 		authRoot.GET("/topics/:id", topic.Detail)
 		authRoot.POST("/topics", topic.Create)
 		authRoot.POST("/topics/:id/vote/:oid", topic.VoteOpinion)
+
+		authRoot.POST("/file/image", file.UploadImage)
 	}
 
 	return r

@@ -70,18 +70,22 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 	if err := db.Model(self).Related(&self.Votes, "Votes").Error; err != nil {
 		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
 	}
-	code, h := self.Author.DetailResponse()
+	code, hAuthor := self.Author.DetailResponse()
 	if code != http.StatusOK {
-		return code, h
+		return code, hAuthor
+	}
+	code, hVotes := self.Author.DetailResponse()
+	if code != http.StatusOK {
+		return code, hVotes
 	}
 	return http.StatusOK, gin.H{
 		"id": self.ID,
 		"title": self.Title,
 		"content": self.Content,
 		"milestone_deadline": self.MilestoneDeadline,
-		"author": h,
+		"author": hAuthor,
 		"opinions": self.Opinions.Response(),
-		"votes": self.Votes.Response(),
+		"votes": hVotes,
 	}
 }
 
@@ -101,19 +105,33 @@ type tVotes []Vote
 
 /* Response */
 
-func (self *Vote) Response() gin.H {
-	return gin.H{
+func (self *Vote) Response() (int, gin.H) {
+	db := database.GetDB()
+	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
+	}
+	code, h := self.Author.DetailResponse()
+	if code != http.StatusOK {
+		return code, h
+	}
+	return http.StatusOK, gin.H{
 		"id": self.ID,
 		"topic_id": self.TopicID,
 		"opinion_id": self.OpinionID,
 		"author_id": self.AuthorID,
+		"author": h,
 	}
 }
 
-func (self *tVotes) Response() []gin.H {
+func (self *tVotes) Response() (int, []gin.H) {
 	var votes []gin.H
 	for _, vote := range *self {
-		votes = append(votes, vote.Response())
+		code, h := vote.Response()
+		if code != http.StatusOK {
+			votes = nil
+			return code, append(votes, h)
+		}
+		votes = append(votes, h)
 	}
-	return votes
+	return http.StatusOK, votes
 }
