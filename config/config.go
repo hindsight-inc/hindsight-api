@@ -1,67 +1,59 @@
 package config
 
-import (
-	//"fmt"
-	"github.com/spf13/viper"
-)
-
 type Configuration struct {
 	MySQL_database string
 	MySQL_password string
 
 	JWT_Realm string
-	JWT_Key string
+	JWT_Key   string
 
 	Facebook_disable_test bool
-	Facebook_app_id	string
-	Facebook_app_secret string
+	Facebook_app_id       string
+	Facebook_app_secret   string
 	Facebook_access_token string
 }
 
 var Config *Configuration
 
-func loadViper() error {
-	//viper.SetDefault("fb_app_id", "FACEBOOK_APP_ID")
-	//viper.SetDefault("fb_app_secret", "FACEBOOK_SECRET")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config/")
-	viper.AddConfigPath("../config/")
-	viper.SetConfigType("yaml")
+func loadConfiguration(config configurationLoader) error {
 
-	//	load normal config
-	viper.SetConfigName("config")
-	if err := viper.ReadInConfig(); err != nil {
-		//panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	config.setConfig("config", "yaml", ".")
+	config.setConfig("config", "yaml", "./config/")
+	config.setConfig("config", "yaml", "../config/")
+	if err := config.read(); err != nil {
 		return err
 	}
 
-	//	load secret config
-	viper.SetConfigName("secret")
-	if err := viper.MergeInConfig(); err != nil {
-		//panic(fmt.Errorf("Fatal error secret file: %s \n", err))
+	config.setConfig("secret", "yaml", ".")
+	if err := config.merge(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func Init() (*Configuration, error) {
-	// `viper` is used as our configuration management library
-	if err := loadViper(); err != nil {
-		return nil, err
-	}
+func readConfiguration(config configurationReader) (*Configuration, error) {
 	Config = &Configuration{
-		MySQL_database: viper.GetString("mysql_database"),
-		MySQL_password: viper.GetString("mysql_password"),
+		MySQL_database: config.getString("mysql_database"),
+		MySQL_password: config.getString("mysql_password"),
 
-		JWT_Realm: viper.GetString("jwt_realm"),
-		JWT_Key: viper.GetString("jwt_key"),
+		JWT_Realm: config.getString("jwt_realm"),
+		JWT_Key:   config.getString("jwt_key"),
 
-		Facebook_disable_test: viper.GetBool("fb_disable_test"),
-		Facebook_app_id: viper.GetString("fb_app_id"),
-		Facebook_app_secret: viper.GetString("fb_app_secret"),
-		Facebook_access_token: viper.GetString("fb_access_token"),
+		Facebook_disable_test: config.getBool("fb_disable_test"),
+		Facebook_app_id:       config.getString("fb_app_id"),
+		Facebook_app_secret:   config.getString("fb_app_secret"),
+		Facebook_access_token: config.getString("fb_access_token"),
 	}
 	return Config, nil
+}
+
+func Init(config configurator) (*Configuration, error) {
+
+	if err := loadConfiguration(config); err != nil {
+		return nil, err
+	}
+
+	return readConfiguration(config)
 }
 
 func Shared() *Configuration {

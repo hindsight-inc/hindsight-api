@@ -2,12 +2,14 @@ package config
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInit(t *testing.T) {
 	//t.Log("Test: Config")
-	c, err := Init()
+	provider := new(ConfigProvider)
+	c, err := Init(provider)
 
 	assert.Empty(t, err)
 	assert.NotEmpty(t, c)

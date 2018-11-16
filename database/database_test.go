@@ -1,13 +1,15 @@
 package database
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"hindsight/config"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDatabase(t *testing.T) {
-	_, err := config.Init()
+	provider := new(config.ConfigProvider)
+	_, err := config.Init(provider)
 	assert.Empty(t, err)
 
 	db := Init()
