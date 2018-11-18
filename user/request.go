@@ -24,8 +24,10 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
-	//	TODO: refactor
-	db.Create(&user)
+	if err := db.Create(&user).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainUserUpdate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
 	c.JSON(http.StatusOK, user.Response())
 }
 
