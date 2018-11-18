@@ -2,17 +2,17 @@ package main
 
 import (
 	//"log"
-	"github.com/gin-gonic/gin"
 	"github.com/appleboy/gin-jwt"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 
-	"hindsight/database"
-	"hindsight/user"
-	"hindsight/topic"
 	"hindsight/auth"
 	"hindsight/config"
+	"hindsight/database"
 	"hindsight/facebook"
 	"hindsight/file"
+	"hindsight/topic"
+	"hindsight/user"
 )
 
 var authMiddleware *jwt.GinJWTMiddleware
@@ -70,10 +70,10 @@ func setupRouter() *gin.Engine {
 			claims := jwt.ExtractClaims(c)
 			u, _ := c.Get(user.IdentityKey)
 			c.JSON(200, gin.H{
-				"message": "pong",
+				"message":  "pong",
 				"claim_id": claims[user.IdentityKey],
-				"username": u.(*user.User).Username,	//	TODO: replace Username with ID, as Username will be nullable
-				"id": u.(*user.User).ID,				//	TODO: why cannot obtain u.ID?
+				"username": u.(*user.User).Username, //	TODO: replace Username with ID, as Username will be nullable
+				"id":       u.(*user.User).ID,       //	TODO: why cannot obtain u.ID?
 			})
 		})
 		auth.GET("/refresh", authMiddleware.RefreshHandler)
@@ -96,7 +96,8 @@ func setupRouter() *gin.Engine {
 }
 
 func setupConfig() {
-	if _, err := config.Init(); err != nil {
+	provider := new(config.ViperProvider)
+	if _, err := config.Init(provider); err != nil {
 		panic(err)
 	}
 }

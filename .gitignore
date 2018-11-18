@@ -1,5 +1,7 @@
 .DS_Store
 .*.sw*
 hindsight
+debug
+.vscode
 config/secret.yaml
 public/upload/image/*

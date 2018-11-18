@@ -1,13 +1,15 @@
 package auth
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"hindsight/config"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthMiddleware(t *testing.T) {
-	_, err := config.Init()
+	provider := new(config.ViperProvider)
+	_, err := config.Init(provider)
 	assert.Empty(t, err)
 
 	authMiddleware := GetMiddleware()
