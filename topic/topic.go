@@ -12,7 +12,8 @@ import (
 
 const kPageSize = "10"
 const kTitleMin = 10
-const kTitleMax = 1024
+const kTitleMax = 140
+const kContentMax = 65536
 const kDeadlineThreshold = time.Hour * 1
 const kDefaultTitle0 = "Agree"
 const kDefaultTitle1 = "Disagree"
@@ -33,7 +34,7 @@ type Topic struct {
 	AuthorID	uint
 	// PermissionView [User]
 	// PermissionVote [User]
-	// Cover Image
+	CoverUID	string
 	Opinions	tOpinions
 	Votes		tVotes
 }
@@ -41,10 +42,11 @@ type Topic struct {
 /* Request */
 
 type CreateRequest struct {
-	Title	string
-	Content	string
+	Title		string
+	Content		string
 	MilestoneDeadline time.Time `json:"milestone_deadline"`
-	Opinions []OpinionRequest
+	CoverUID	string `json:"cover_uid"`
+	Opinions	[]OpinionRequest
 }
 
 /* Response */
@@ -54,6 +56,7 @@ func (self *Topic) Response() gin.H {
 		"id": self.ID,
 		"title": self.Title,
 		"content": self.Content,
+		"cover_uid": self.CoverUID,
 		"milestone_deadline": self.MilestoneDeadline,
 	}
 }
@@ -82,6 +85,7 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 		"id": self.ID,
 		"title": self.Title,
 		"content": self.Content,
+		"cover_uid": self.CoverUID,
 		"milestone_deadline": self.MilestoneDeadline,
 		"author": hAuthor,
 		"opinions": self.Opinions.Response(),

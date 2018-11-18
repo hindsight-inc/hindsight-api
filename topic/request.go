@@ -2,6 +2,7 @@ package topic
 
 import (
 	//"log"
+	"os"
 	"time"
 	//"strconv"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"hindsight/database"
 	"hindsight/user"
 	"hindsight/herror"
+	"hindsight/file"
 )
 
 func List(c *gin.Context) {
@@ -117,8 +119,16 @@ func Create(c *gin.Context) {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidEntry, "title is too long"))
 		return
 	}
+	if len(request.Content) > kContentMax {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonInvalidEntry, "title is too long"))
+		return
+	}
 	if request.MilestoneDeadline.Before(time.Now().Add(kDeadlineThreshold)) {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonNonexistentEntry, "milestone_deadline is not late enough"))
+		return
+	}
+	if _, err := os.Stat(file.ImagePath + request.CoverUID); os.IsNotExist(err) {
+		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonNonexistentEntry, "invalid cover_uid"))
 		return
 	}
 
@@ -126,6 +136,7 @@ func Create(c *gin.Context) {
 	topic := Topic{
 		Title: request.Title,
 		Content: request.Content,
+		CoverUID: request.CoverUID,
 		AuthorID: u.ID,
 		MilestoneDeadline: request.MilestoneDeadline,
 	}

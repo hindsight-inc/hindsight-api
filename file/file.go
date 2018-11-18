@@ -13,6 +13,8 @@ import (
 	"hindsight/database"
 )
 
+const ImagePath = "./public/upload/image/"
+
 type Image struct {
 	gorm.Model
 	Filename string
@@ -47,7 +49,7 @@ func UploadImage(c *gin.Context) {
 	//	TODO: check if file is image
 	//	TODO: check file size
 
-	if err := c.SaveUploadedFile(file, "./public/upload/image/" + uid); err != nil {
+	if err := c.SaveUploadedFile(file, ImagePath + uid); err != nil {
 		c.JSON(herror.Bad(herror.DomainUploadImage, herror.ReasonOperationFailure, err.Error()))
 		return
 	}
