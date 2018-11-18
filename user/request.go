@@ -46,12 +46,6 @@ func UserUpdate(c *gin.Context) {
 	}
 
 	db := database.Shared()
-	/*
-	if err := db.Where(User{Username: request.Username}).First(&u).Error; err != nil {
-		c.JSON(herror.Bad(herror.DomainUserUpdate, herror.ReasonDatabaseError, err.Error()))
-		return
-	}
-	*/
 	u.Username = request.Username
 	//	TODO: why cannot use Update?
 	if err := db.Save(&u).Error; err != nil {
@@ -90,14 +84,6 @@ func Authorize(c *gin.Context, username string) bool {
 	db := database.Shared()
 	return !db.Where(User{Username: username}).First(&user).RecordNotFound()
 }
-
-//	Use this function if we are going to implement our own auth middleware
-/*
-func UserLogin(c *gin.Context) {
-	code, response, _ := Authenticate(c)
-	c.JSON(code, response)
-}
-*/
 
 func UserInfo(c *gin.Context) {
 	//	TODO: refactor
