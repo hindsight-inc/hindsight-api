@@ -20,6 +20,18 @@ type User struct {
 	FacebookUserID	uint
 }
 
+/* Request */
+
+type UpdateRequest struct {
+	Username	string
+}
+
+/*
+func (UpdateRequest) TableName() string {
+    return "user"
+}
+*/
+
 /* Response */
 
 func (self *User) Response() gin.H {

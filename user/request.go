@@ -17,14 +17,50 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
+	//	TODO: validate username
+
 	db := database.Shared()
 	if notFound := db.Where(User{Username: user.Username}).First(&user).RecordNotFound(); !notFound {
 		c.JSON(herror.Bad(herror.DomainUserRegister, herror.ReasonDuplicatedEntry, "User already exists"))
 		return
 	}
 
+	//	TODO: refactor
 	db.Create(&user)
 	c.JSON(http.StatusOK, user.Response())
+}
+
+func UserUpdate(c *gin.Context) {
+	var request UpdateRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(herror.Bad(herror.DomainUserUpdate, herror.ReasonInvalidJSON, err.Error()))
+		return
+	}
+
+	//	TODO: validate username
+
+	u := Current(c)
+	if u == nil {
+		c.JSON(herror.Bad(herror.DomainUserUpdate, herror.ReasonNonexistentEntry, "Current user not found"))
+		return
+	}
+
+	db := database.Shared()
+	/*
+	if err := db.Where(User{Username: request.Username}).First(&u).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainUserUpdate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
+	*/
+	u.Username = request.Username
+	//	TODO: why cannot use Update?
+	if err := db.Save(&u).Error; err != nil {
+		c.JSON(herror.Bad(herror.DomainUserUpdate, herror.ReasonDatabaseError, err.Error()))
+		return
+	}
+
+	//	TODO: token will be invalidated at this state, should return new token
+	c.JSON(http.StatusOK, u.Response())
 }
 
 func Authenticate(c *gin.Context) (int, gin.H, *User) {
@@ -64,6 +100,7 @@ func UserLogin(c *gin.Context) {
 */
 
 func UserInfo(c *gin.Context) {
+	//	TODO: refactor
 	var user User
 	claim := jwt.ExtractClaims(c)[IdentityKey]
 	if claim == nil {
