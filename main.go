@@ -82,7 +82,7 @@ func setupRouter() *gin.Engine {
 	authRoot := r.Group("/")
 	authRoot.Use(authMiddleware.MiddlewareFunc())
 	{
-		authRoot.GET("/user", user.UserInfo)
+		authRoot.GET("/user", user.UserDetail)
 		authRoot.PATCH("/user", user.UserUpdate)
 
 		authRoot.GET("/topics", topic.List)

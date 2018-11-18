@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/appleboy/gin-jwt"
 	"hindsight/database"
 	"hindsight/herror"
 )
@@ -85,23 +84,7 @@ func Authorize(c *gin.Context, username string) bool {
 	return !db.Where(User{Username: username}).First(&user).RecordNotFound()
 }
 
-func UserInfo(c *gin.Context) {
-	//	TODO: refactor
-	var user User
-	claim := jwt.ExtractClaims(c)[IdentityKey]
-	if claim == nil {
-		c.JSON(herror.Unauthorized(herror.DomainUserInfo, herror.ReasonEmptyEntry, "Missing authorization info"))
-		return
-	}
-	username := claim.(string)
-	//user, _ := c.Get(IdentityKey)
-	//username := user.(*User).Username
-	db := database.Shared()
-	db.Where(User{Username: username}).First(&user)
-	if user.ID == 0 {
-		//	Shouldn't reach here unless user has been deleted but active token is not
-		c.JSON(herror.Bad(herror.DomainUserInfo, herror.ReasonNonexistentEntry, "User not found"))
-		return
-	}
-	c.JSON(user.DetailResponse())
+func UserDetail(c *gin.Context) {
+	u := Current(c)
+	c.JSON(u.DetailResponse())
 }
