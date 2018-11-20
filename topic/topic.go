@@ -39,6 +39,8 @@ type Topic struct {
 	Votes		tVotes
 }
 
+type tTopics []Topic
+
 /* Request */
 
 type CreateRequest struct {
@@ -51,13 +53,46 @@ type CreateRequest struct {
 
 /* Response */
 
-func (self *Topic) Response() gin.H {
-	return gin.H{
+/// A simple response that doesn't replies on other database calls
+func (self *Topic) CreateResponse() (int, gin.H) {
+	return http.StatusOK, gin.H{
 		"id": self.ID,
 		"title": self.Title,
 		"content": self.Content,
 		"cover_uid": self.CoverUID,
 		"milestone_deadline": self.MilestoneDeadline,
+	}
+}
+
+func (self *Topic) Response() (int, gin.H) {
+	db := database.Shared()
+	//	TODO: how to get gin.H from struct?
+	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
+	}
+	if err := db.Model(self).Related(&self.Opinions, "Opinions").Error; err != nil {
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
+	}
+	if err := db.Model(self).Related(&self.Votes, "Votes").Error; err != nil {
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
+	}
+	code, hAuthor := self.Author.DetailResponse()
+	if code != http.StatusOK {
+		return code, hAuthor
+	}
+	code, hVotes := self.Votes.Response()
+	if code != http.StatusOK {
+		return code, hVotes[0]
+	}
+	return http.StatusOK, gin.H{
+		"id": self.ID,
+		"title": self.Title,
+		"content": self.Content,
+		"cover_uid": self.CoverUID,
+		"milestone_deadline": self.MilestoneDeadline,
+		"author": hAuthor,
+		"opinions": self.Opinions.Response(),
+		"votes": hVotes,
 	}
 }
 
@@ -77,9 +112,9 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 	if code != http.StatusOK {
 		return code, hAuthor
 	}
-	code, hVotes := self.Author.DetailResponse()
+	code, hVotes := self.Votes.Response()
 	if code != http.StatusOK {
-		return code, hVotes
+		return code, hVotes[0]
 	}
 	return http.StatusOK, gin.H{
 		"id": self.ID,
@@ -91,4 +126,17 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 		"opinions": self.Opinions.Response(),
 		"votes": hVotes,
 	}
+}
+
+func (self *tTopics) Response() (int, []gin.H) {
+	var topics []gin.H
+	for _, topic := range *self {
+		code, h := topic.Response()
+		if code != http.StatusOK {
+			topics = nil
+			return code, append(topics, h)
+		}
+		topics = append(topics, h)
+	}
+	return http.StatusOK, topics
 }

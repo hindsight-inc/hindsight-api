@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 	//"strconv"
-	"net/http"
 	"github.com/gin-gonic/gin"
 	"hindsight/database"
 	"hindsight/user"
@@ -17,12 +16,12 @@ func List(c *gin.Context) {
 	offset := c.DefaultQuery("offset", "0")
 	limit := c.DefaultQuery("limit", kPageSize)
 	db := database.Shared()
-	var topics []Topic
+	var topics tTopics
 	if err := db.Order("updated_at desc, created_at desc").Offset(offset).Limit(limit).Find(&topics).Error; err != nil {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, topics)
+	c.JSON(topics.Response())
 }
 
 func Detail(c *gin.Context) {
@@ -168,5 +167,5 @@ func Create(c *gin.Context) {
 			return
 		}
 	}
-	c.JSON(http.StatusOK, topic.Response())
+	c.JSON(topic.CreateResponse())
 }
