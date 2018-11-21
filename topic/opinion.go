@@ -25,7 +25,10 @@ type OpinionRequest struct {
 /* Response */
 
 func (self *Opinion) Response() gin.H {
-	return gin.H{"title": self.Title}
+	return gin.H{
+		"id": self.ID,
+		"title": self.Title,
+	}
 }
 
 func (self *tOpinions) Response() []gin.H {
