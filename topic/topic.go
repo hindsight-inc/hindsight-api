@@ -112,7 +112,7 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 	if code != http.StatusOK {
 		return code, hAuthor
 	}
-	code, hVotes := self.Votes.Response()
+	code, hVotes := self.Votes.DetailResponse()
 	if code != http.StatusOK {
 		return code, hVotes[0]
 	}
