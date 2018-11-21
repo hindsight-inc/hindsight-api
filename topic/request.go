@@ -71,7 +71,7 @@ func VoteOpinion(c *gin.Context) {
 		TopicID: topic.ID,
 	}
 	//	check if user already voted
-	if err := db.First(&vote).Error; err != nil && vote.ID > 0 {
+	if err := db.Where(vote).First(&vote).Error; err != nil && vote.ID > 0 {
 		c.JSON(herror.Bad(herror.DomainTopicCreate, herror.ReasonDatabaseError, err.Error()))
 		return
 	}
