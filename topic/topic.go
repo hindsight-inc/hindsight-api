@@ -66,42 +66,23 @@ func (self *Topic) CreateResponse() (int, gin.H) {
 
 func (self *Topic) Response() (int, gin.H) {
 	db := database.Shared()
-	//	TODO: how to get gin.H from struct?
 	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
 		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, "Invalid author: " + err.Error())
 	}
 	if err := db.Model(self).Related(&self.Opinions, "Opinions").Error; err != nil {
 		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, "Invalid opinions: " + err.Error())
 	}
-	//var voteCounts []gin.H
 	for index, opinion := range self.Opinions {
 		var count uint
 		if err := db.Model(&self.Votes).Where("topic_id = ? AND opinion_id = ?", self.ID, opinion.ID).Count(&count).Error; err != nil {
 			return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, "Cannot count votes for '" + opinion.Title + "': " + err.Error())
 		}
-		/*
-		voteCounts = append(voteCounts, gin.H{
-			"opinion_id": opinion.ID,
-			"count": count,
-		})
-		*/
 		self.Opinions[index].VoteCount = count
 	}
-	/*
-	if err := db.Model(self).Related(&self.Votes, "Votes").Error; err != nil && err.Error() != gorm.ErrRecordNotFound.Error() {		// TODO: better error comparison?
-		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
-	}
-	*/
 	code, hAuthor := self.Author.DetailResponse()
 	if code != http.StatusOK {
 		return code, hAuthor
 	}
-	/*
-	code, hVotes := self.Votes.Response()
-	if code != http.StatusOK {
-		return code, hVotes[0]
-	}
-	*/
 	return http.StatusOK, gin.H{
 		"id": self.ID,
 		"title": self.Title,
@@ -110,8 +91,6 @@ func (self *Topic) Response() (int, gin.H) {
 		"milestone_deadline": self.MilestoneDeadline,
 		"author": hAuthor,
 		"opinions": self.Opinions.CountResponse(),
-		//"votes": hVotes,
-		//"vote_counts": voteCounts,
 	}
 }
 
