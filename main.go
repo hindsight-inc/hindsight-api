@@ -96,10 +96,12 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func setupConfig() {
+func setupConfig() *config.Configuration {
 	provider := new(config.ViperProvider)
-	if _, err := config.Init(provider); err != nil {
+	if cfg, err := config.Init(provider); err != nil {
 		panic(err)
+	} else {
+		return cfg
 	}
 }
 
@@ -110,7 +112,7 @@ func setupFacebook() {
 }
 
 func main() {
-	setupConfig()
+	cfg := setupConfig()
 
 	db := setupDB()
 	defer db.Close()
@@ -119,5 +121,5 @@ func main() {
 	setupAuth()
 
 	r := setupRouter()
-	r.Run(":8080")
+	r.Run(":" + cfg.HTTP_port)
 }

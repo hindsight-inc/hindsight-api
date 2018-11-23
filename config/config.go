@@ -1,6 +1,8 @@
 package config
 
 type Configuration struct {
+	HTTP_port string
+
 	MySQL_database string
 	MySQL_password string
 
@@ -33,6 +35,8 @@ func loadConfiguration(config loader) error {
 
 func readConfiguration(config reader) (*Configuration, error) {
 	Config = &Configuration{
+		HTTP_port: config.getString("http_port"),
+
 		MySQL_database: config.getString("mysql_database"),
 		MySQL_password: config.getString("mysql_password"),
 

@@ -17,6 +17,7 @@ func TestInit(t *testing.T) {
 
 func TestConfig(t *testing.T) {
 	c := Shared()
+	assert.NotEmpty(t, c.HTTP_port)
 	assert.NotEmpty(t, c.MySQL_database)
 	assert.NotEmpty(t, c.JWT_Realm)
 	assert.NotEmpty(t, c.Facebook_app_id)

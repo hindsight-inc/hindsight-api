@@ -1,6 +1,9 @@
 title: Hindsight Configuration
 owner: hindsight.inc
 
+http:
+http_port: 8080
+
 mysql:
 mysql_database: golang
 
