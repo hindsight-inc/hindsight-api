@@ -121,5 +121,5 @@ func main() {
 	setupAuth()
 
 	r := setupRouter()
-	r.Run(":" + cfg.HTTP_port)
+	r.Run(":" + cfg.HTTPPort)
 }

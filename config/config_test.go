@@ -17,17 +17,17 @@ func TestInit(t *testing.T) {
 
 func TestConfig(t *testing.T) {
 	c := Shared()
-	assert.NotEmpty(t, c.HTTP_port)
-	assert.NotEmpty(t, c.MySQL_database)
-	assert.NotEmpty(t, c.JWT_Realm)
-	assert.NotEmpty(t, c.Facebook_app_id)
+	assert.NotEmpty(t, c.HTTPPort)
+	assert.NotEmpty(t, c.MySQLDatabase)
+	assert.NotEmpty(t, c.JWTRealm)
+	assert.NotEmpty(t, c.FacebookAppID)
 	//assert.NotEmpty(t, c.Facebook_disable_test)
 }
 
 func TestSecret(t *testing.T) {
 	c := Shared()
-	assert.NotEmpty(t, c.MySQL_password)
-	assert.NotEmpty(t, c.JWT_Key)
-	assert.NotEmpty(t, c.Facebook_app_secret)
-	assert.NotEmpty(t, c.Facebook_access_token)
+	assert.NotEmpty(t, c.MySQLPassword)
+	assert.NotEmpty(t, c.JWTKey)
+	assert.NotEmpty(t, c.FacebookAppSecret)
+	assert.NotEmpty(t, c.FacebookAccessToken)
 }

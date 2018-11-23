@@ -72,7 +72,7 @@ func Init() error {
 	//facebook.Debug = facebook.DEBUG_ALL
 	//facebook.Version = "v3.0"
 
-	app = facebook.New(cfg.Facebook_app_id, cfg.Facebook_app_secret)
+	app = facebook.New(cfg.FacebookAppID, cfg.FacebookAppSecret)
 	return nil
 }
 

@@ -476,7 +476,7 @@ func TestUserConnectFacebookSuccess(t *testing.T) {
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
-	r := auth.ConnectRequest{Method: "facebook", AccessToken: cfg.Facebook_access_token}
+	r := auth.ConnectRequest{Method: "facebook", AccessToken: cfg.FacebookAccessToken}
 	b, _ := json.Marshal(r)
 
 	req, _ := http.NewRequest("POST", "/user/connect", bytes.NewBuffer(b))

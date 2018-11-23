@@ -1,18 +1,18 @@
 package config
 
 type Configuration struct {
-	HTTP_port string
+	HTTPPort string
 
-	MySQL_database string
-	MySQL_password string
+	MySQLDatabase string
+	MySQLPassword string
 
-	JWT_Realm string
-	JWT_Key   string
+	JWTRealm string
+	JWTKey   string
 
 	Facebook_disable_test bool
-	Facebook_app_id       string
-	Facebook_app_secret   string
-	Facebook_access_token string
+	FacebookAppID       string
+	FacebookAppSecret   string
+	FacebookAccessToken string
 }
 
 var Config *Configuration
@@ -35,18 +35,18 @@ func loadConfiguration(config loader) error {
 
 func readConfiguration(config reader) (*Configuration, error) {
 	Config = &Configuration{
-		HTTP_port: config.getString("http_port"),
+		HTTPPort: config.getString("http_port"),
 
-		MySQL_database: config.getString("mysql_database"),
-		MySQL_password: config.getString("mysql_password"),
+		MySQLDatabase: config.getString("mysql_database"),
+		MySQLPassword: config.getString("mysql_password"),
 
-		JWT_Realm: config.getString("jwt_realm"),
-		JWT_Key:   config.getString("jwt_key"),
+		JWTRealm: config.getString("jwt_realm"),
+		JWTKey:   config.getString("jwt_key"),
 
 		Facebook_disable_test: config.getBool("fb_disable_test"),
-		Facebook_app_id:       config.getString("fb_app_id"),
-		Facebook_app_secret:   config.getString("fb_app_secret"),
-		Facebook_access_token: config.getString("fb_access_token"),
+		FacebookAppID:       config.getString("fb_app_id"),
+		FacebookAppSecret:   config.getString("fb_app_secret"),
+		FacebookAccessToken: config.getString("fb_access_token"),
 	}
 	return Config, nil
 }

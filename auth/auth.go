@@ -22,8 +22,8 @@ func GetMiddleware() *jwt.GinJWTMiddleware {
 	cfg := config.Shared()
 	//https://godoc.org/gopkg.in/appleboy/gin-jwt.v2
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       cfg.JWT_Realm,
-		Key:         []byte(cfg.JWT_Key),
+		Realm:       cfg.JWTRealm,
+		Key:         []byte(cfg.JWTKey),
 		Timeout:     time.Hour * 99999,
 		MaxRefresh:  time.Hour * 99999,
 		IdentityKey: user.IdentityKey,

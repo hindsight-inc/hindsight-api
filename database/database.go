@@ -17,7 +17,7 @@ var DB *gorm.DB
 func Init() *gorm.DB {
 	cfg := config.Shared()
 	//db, err := gorm.Open("sqlite3", "./../gorm.db")
-	db, err := gorm.Open("mysql", cfg.MySQL_database + ":" + cfg.MySQL_password + "@/golang?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open("mysql", cfg.MySQLDatabase + ":" + cfg.MySQLPassword + "@/golang?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}
