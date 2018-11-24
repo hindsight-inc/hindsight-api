@@ -45,8 +45,8 @@ func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.MaxMultipartMemory = 8 << 20 // 8 MiB
 	//r.Static("/", "./static")
-	r.Use(static.Serve("/", static.LocalFile("./static", true)))
-	r.Use(static.Serve("/image", static.LocalFile("./static/upload/image", true)))
+	r.Use(static.Serve("/", static.LocalFile("./static", false)))
+	r.Use(static.Serve("/image", static.LocalFile("./static/upload/image", false)))
 	r.GET("/test", internalTest)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
