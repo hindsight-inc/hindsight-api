@@ -13,7 +13,7 @@ import (
 	"hindsight/database"
 )
 
-const ImagePath = "./public/upload/image/"
+const ImagePath = "./static/upload/image/"
 
 type Image struct {
 	gorm.Model
@@ -74,7 +74,7 @@ func main() {
 	router := gin.Default()
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
-	router.Static("/", "../public/upload/image")
+	router.Static("/", "../" + ImagePath)
 	router.POST("/upload", func(c *gin.Context) {
 		name := c.PostForm("name")
 		email := c.PostForm("email")
@@ -93,7 +93,7 @@ func main() {
 		}
 		//	TODO: check if file is image
 		//	TODO: check file size
-		if err := c.SaveUploadedFile(file, "../public/upload/image/" + file.Filename); err != nil {
+		if err := c.SaveUploadedFile(file, "../" + ImagePath + file.Filename); err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		}

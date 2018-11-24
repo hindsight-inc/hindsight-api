@@ -5,6 +5,7 @@ import (
 	"github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/gin-contrib/static"
 
 	"hindsight/auth"
 	"hindsight/config"
@@ -43,7 +44,9 @@ func setupRouter() *gin.Engine {
 	//	route
 	r := gin.Default()
 	r.MaxMultipartMemory = 8 << 20 // 8 MiB
-	r.Static("/image", "./public/upload/image")
+	//r.Static("/", "./static")
+	r.Use(static.Serve("/", static.LocalFile("./static", true)))
+	r.Use(static.Serve("/image", static.LocalFile("./static/upload/image", true)))
 	r.GET("/test", internalTest)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

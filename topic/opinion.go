@@ -12,6 +12,7 @@ type Opinion struct {
 	TopicID		uint
 	Author		user.User
 	AuthorID	uint
+	VoteCount	uint `gorm:"-"`
 }
 
 type tOpinions []Opinion
@@ -24,14 +25,18 @@ type OpinionRequest struct {
 
 /* Response */
 
-func (self *Opinion) Response() gin.H {
-	return gin.H{"title": self.Title}
+func (self *Opinion) CountResponse() gin.H {
+	return gin.H{
+		"id": self.ID,
+		"title": self.Title,
+		"vote_count": self.VoteCount,
+	}
 }
 
-func (self *tOpinions) Response() []gin.H {
+func (self *tOpinions) CountResponse() []gin.H {
 	var opinions []gin.H
 	for _, opinion := range *self {
-		opinions = append(opinions, opinion.Response())
+		opinions = append(opinions, opinion.CountResponse())
 	}
 	return opinions
 }

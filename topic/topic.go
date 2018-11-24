@@ -66,23 +66,22 @@ func (self *Topic) CreateResponse() (int, gin.H) {
 
 func (self *Topic) Response() (int, gin.H) {
 	db := database.Shared()
-	//	TODO: how to get gin.H from struct?
 	if err := db.Model(self).Related(&self.Author, "Author").Error; err != nil {
-		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, "Invalid author: " + err.Error())
 	}
 	if err := db.Model(self).Related(&self.Opinions, "Opinions").Error; err != nil {
-		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
+		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, "Invalid opinions: " + err.Error())
 	}
-	if err := db.Model(self).Related(&self.Votes, "Votes").Error; err != nil {
-		return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, err.Error())
+	for index, opinion := range self.Opinions {
+		var count uint
+		if err := db.Model(&self.Votes).Where("topic_id = ? AND opinion_id = ?", self.ID, opinion.ID).Count(&count).Error; err != nil {
+			return herror.Bad(herror.DomainTopicResponse, herror.ReasonDatabaseError, "Cannot count votes for '" + opinion.Title + "': " + err.Error())
+		}
+		self.Opinions[index].VoteCount = count
 	}
 	code, hAuthor := self.Author.DetailResponse()
 	if code != http.StatusOK {
 		return code, hAuthor
-	}
-	code, hVotes := self.Votes.Response()
-	if code != http.StatusOK {
-		return code, hVotes[0]
 	}
 	return http.StatusOK, gin.H{
 		"id": self.ID,
@@ -91,8 +90,7 @@ func (self *Topic) Response() (int, gin.H) {
 		"cover_uid": self.CoverUID,
 		"milestone_deadline": self.MilestoneDeadline,
 		"author": hAuthor,
-		"opinions": self.Opinions.Response(),
-		"votes": hVotes,
+		"opinions": self.Opinions.CountResponse(),
 	}
 }
 
@@ -112,7 +110,7 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 	if code != http.StatusOK {
 		return code, hAuthor
 	}
-	code, hVotes := self.Votes.Response()
+	code, hVotes := self.Votes.DetailResponse()
 	if code != http.StatusOK {
 		return code, hVotes[0]
 	}
@@ -123,7 +121,7 @@ func (self *Topic) DetailResponse() (int, gin.H) {
 		"cover_uid": self.CoverUID,
 		"milestone_deadline": self.MilestoneDeadline,
 		"author": hAuthor,
-		"opinions": self.Opinions.Response(),
+		"opinions": self.Opinions.CountResponse(),
 		"votes": hVotes,
 	}
 }
